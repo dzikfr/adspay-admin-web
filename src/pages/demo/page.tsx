@@ -5,7 +5,8 @@ import { DynamicTable } from '@/components/layout/DynamicalTable'
 import { type FieldConfig } from '@/types/field_form'
 import { Button } from '@/components/ui/button'
 import { useState } from 'react'
-import { type ColumnConfig } from '@/components/layout/DynamicalTable'
+import { type ColumnConfig } from '@/types/table'
+import { Trash, Pencil, Eye, CheckLine } from 'lucide-react'
 
 const demoSchema = z.object({
   name: z.string().min(1, 'Nama wajib'),
@@ -166,11 +167,17 @@ export function DemoPage() {
         caption="Daftar Pengguna"
         actions={row => (
           <div className="flex gap-2 justify-end">
-            <Button size="sm" variant="outline" onClick={() => console.log('Edit', row)}>
-              Edit
+            <Button size="sm" variant="outline" onClick={() => console.log('View', row)}>
+              <Eye />
+            </Button>
+            <Button size="sm" variant="default" onClick={() => console.log('Edit', row)}>
+              <Pencil />
+            </Button>
+            <Button size="sm" variant="secondary" onClick={() => console.log('Verify', row)}>
+              <CheckLine />
             </Button>
             <Button size="sm" variant="destructive" onClick={() => console.log('Delete', row)}>
-              Delete
+              <Trash />
             </Button>
           </div>
         )}
