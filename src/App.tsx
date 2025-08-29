@@ -6,6 +6,7 @@ import { DemoPage } from '@/pages/demo/page'
 import { LoginPage } from '@/pages/login/page'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoutes'
+import { Toaster } from '@/components/ui/sonner'
 
 function App() {
   return (
@@ -22,6 +23,8 @@ function App() {
           </Route>
         </Route>
       </Routes>
+
+      <Toaster richColors closeButton position="bottom-right" />
     </ThemeProvider>
   )
 }
