@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { login } from '@/services/auth'
 import { useNavigate } from 'react-router-dom'
+import { Input } from '@/components/ui/input'
 
 export function LoginPage() {
   const [email, setEmail] = useState('')
@@ -23,14 +24,14 @@ export function LoginPage() {
       <form onSubmit={handleLogin} className="p-6 shadow rounded bg-white space-y-4 w-80">
         <h1 className="text-xl font-bold">Login</h1>
         {error && <p className="text-red-500 text-sm">{error}</p>}
-        <input
+        <Input
           className="w-full border p-2 rounded"
           type="email"
           placeholder="Email"
           value={email}
           onChange={e => setEmail(e.target.value)}
         />
-        <input
+        <Input
           className="w-full border p-2 rounded"
           type="password"
           placeholder="Password"

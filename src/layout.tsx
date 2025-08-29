@@ -2,6 +2,7 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { AppSidebar } from '@/components/layout/AppSidebar'
 import { Outlet } from 'react-router-dom'
 import { ModeToggle } from '@/components/layout/ModeToggle'
+import { AppBreadcrumb } from './components/layout/AppBreadCrumb'
 
 export default function Layout() {
   return (
@@ -16,6 +17,10 @@ export default function Layout() {
         <main className="flex-1 overflow-auto">
           <div className="p-4 flex items-center border-b">
             <SidebarTrigger />
+
+            <div className="flex-1">
+              <AppBreadcrumb />
+            </div>
 
             <div className="flex-1 flex justify-center">
               <span className="font-bold">Admin Dashboard</span>
