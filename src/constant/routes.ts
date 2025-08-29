@@ -5,4 +5,5 @@ const BASE_URL =
 export const API = {
   login: `${BASE_URL}/auth/login`,
   register: `${BASE_URL}/auth/register`,
+  refresh: `${BASE_URL}/auth/refresh-token`,
 }
