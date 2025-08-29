@@ -76,16 +76,7 @@ export function DemoPage() {
         fields={demoFields}
         isOpen={open}
         onClose={() => setOpen(false)}
-        onSubmit={async values => {
-          console.log('Form Values:', values)
-
-          if (values.avatar) {
-            const fd = new FormData()
-            fd.append('avatar', values.avatar)
-            fd.append('name', values.name)
-            await fetch('/api/upload', { method: 'POST', body: fd })
-          }
-        }}
+        onSubmit={values => console.log('Form Values:', values)}
       />
 
       <DynamicTabbedFormModal
@@ -93,7 +84,7 @@ export function DemoPage() {
         tabs={tabs}
         isOpen={openTabbed}
         onClose={() => setOpenTabbed(false)}
-        onSubmit={values => console.log(values)}
+        onSubmit={values => console.log('Tabbed Form Values:', values)}
       />
     </>
   )

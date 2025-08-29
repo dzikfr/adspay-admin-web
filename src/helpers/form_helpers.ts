@@ -30,6 +30,9 @@ export function getDefaultValues<T extends z.ZodTypeAny>(
       case 'date':
         defaults[field.name] = undefined
         break
+      case 'table':
+        defaults[field.name] = []
+        break
       default:
         defaults[field.name] = ''
     }

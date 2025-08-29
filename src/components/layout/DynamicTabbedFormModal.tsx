@@ -34,6 +34,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { type FieldConfig } from '@/types/field_form'
 import { getDefaultValues } from '@/helpers/form_helpers'
+import { DynamicFormTableField } from './DynamicFormTableField'
 
 interface TabConfig {
   id: string
@@ -103,17 +104,39 @@ export function DynamicTabbedFormModal<T extends z.ZodType<any, any>>({
                         name={field.name as any}
                         render={({ field: rhfField }) => (
                           <FormItem
-                            className={field.type === 'textarea' ? 'col-span-2' : 'col-span-1'}
+                            className={
+                              field.type === 'textarea' || field.type === 'table'
+                                ? 'col-span-2'
+                                : 'col-span-1'
+                            }
                           >
                             <FormLabel>
                               {field.label}
                               {field.required && <span className="text-red-500 ml-0.5">*</span>}
                             </FormLabel>
                             <FormControl>
-                              {field.type === 'file' ? (
+                              {field.type === 'table' ? (
+                                <DynamicFormTableField
+                                  name={field.name}
+                                  control={form.control}
+                                  register={form.register}
+                                  errors={form.formState.errors}
+                                  columns={
+                                    field.options
+                                      ? field.options.map(opt => ({
+                                          label: opt.label,
+                                          key: 'value' in opt ? opt.value : opt.key,
+                                          type: (opt as any).type,
+                                        }))
+                                      : []
+                                  }
+                                />
+                              ) : field.type === 'file' ? (
                                 <Input
                                   type="file"
-                                  accept={field.options?.map(o => o.value).join(',')}
+                                  accept={field.options
+                                    ?.map(o => ('value' in o ? o.value : ''))
+                                    .join(',')}
                                   onChange={e => {
                                     const file = e.target.files?.[0] || null
                                     rhfField.onChange(file)
@@ -141,7 +164,10 @@ export function DynamicTabbedFormModal<T extends z.ZodType<any, any>>({
                                   </SelectTrigger>
                                   <SelectContent>
                                     {field.options?.map(opt => (
-                                      <SelectItem key={opt.value} value={opt.value}>
+                                      <SelectItem
+                                        key={'value' in opt ? opt.value : (opt as any).key}
+                                        value={'value' in opt ? opt.value : (opt as any).key}
+                                      >
                                         {opt.label}
                                       </SelectItem>
                                     ))}

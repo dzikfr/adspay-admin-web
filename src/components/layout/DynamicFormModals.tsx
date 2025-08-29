@@ -33,6 +33,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { type FieldConfig } from '@/types/field_form'
 import { getDefaultValues } from '@/helpers/form_helpers'
+import { DynamicFormTableField } from './DynamicFormTableField'
 
 interface DynamicFormModalProps<T extends z.ZodType<any, any>> {
   schema: T
@@ -64,6 +65,7 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
 
   const handleSubmit = async (data: z.infer<T>) => {
     await onSubmit(data)
+    form.reset(getDefaultValues<T>(fields) as any)
     onClose()
   }
 
@@ -85,16 +87,41 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
                 control={form.control}
                 name={field.name as any}
                 render={({ field: rhfField }) => (
-                  <FormItem className={field.type === 'textarea' ? 'col-span-2' : 'col-span-1'}>
+                  <FormItem
+                    className={
+                      field.type === 'textarea' || field.type === 'table'
+                        ? 'col-span-2'
+                        : 'col-span-1'
+                    }
+                  >
                     <FormLabel>
                       {field.label}
                       {field.required && <span className="text-red-500 ml-0.5">*</span>}
                     </FormLabel>
                     <FormControl>
-                      {field.type === 'file' ? (
+                      {field.type === 'table' ? (
+                        <DynamicFormTableField
+                          name={field.name}
+                          control={form.control}
+                          register={form.register}
+                          errors={form.formState.errors}
+                          columns={
+                            field.options
+                              ? field.options.map(opt => ({
+                                  label: opt.label,
+                                  key: 'key' in opt ? opt.key : (opt as any).value,
+                                  type: (opt as any).type,
+                                }))
+                              : []
+                          }
+                        />
+                      ) : field.type === 'file' ? (
                         <Input
                           type="file"
-                          accept={field.options?.map(o => o.value).join(',')}
+                          accept={field.options
+                            ?.map(o => ('value' in o ? o.value : undefined))
+                            .filter((v): v is string => !!v)
+                            .join(',')}
                           onChange={e => {
                             const file = e.target.files?.[0] || null
                             rhfField.onChange(file)
@@ -122,7 +149,10 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
                           </SelectTrigger>
                           <SelectContent>
                             {field.options?.map(opt => (
-                              <SelectItem key={opt.value} value={opt.value}>
+                              <SelectItem
+                                key={'value' in opt ? opt.value : opt.key}
+                                value={'value' in opt ? opt.value : opt.key}
+                              >
                                 {opt.label}
                               </SelectItem>
                             ))}

@@ -21,12 +21,6 @@ export const tabs = [
         required: true,
         placeholder: 'Masukkan email',
       },
-    ] as FieldConfig[],
-  },
-  {
-    id: 'details',
-    label: 'Details',
-    fields: [
       {
         name: 'role',
         label: 'Role',
@@ -44,6 +38,22 @@ export const tabs = [
         type: 'textarea',
         required: false,
         placeholder: 'Ceritakan tentang dirimu',
+      },
+    ] as FieldConfig[],
+  },
+  {
+    id: 'details',
+    label: 'Details',
+    fields: [
+      {
+        name: 'items',
+        label: 'Detail Item',
+        type: 'table',
+        options: [
+          { label: 'Nama Produk', key: 'product' },
+          { label: 'Qty', key: 'qty', type: 'number' },
+          { label: 'Harga', key: 'price', type: 'number' },
+        ],
       },
     ] as FieldConfig[],
   },
@@ -84,5 +94,15 @@ export const demoFields: FieldConfig[] = [
     type: 'checkbox',
     placeholder: 'Ya, saya setuju',
     required: true,
+  },
+  {
+    name: 'items',
+    label: 'Detail Item',
+    type: 'table',
+    options: [
+      { label: 'Nama Produk', key: 'product' },
+      { label: 'Qty', key: 'qty', type: 'number' },
+      { label: 'Harga', key: 'price', type: 'number' },
+    ],
   },
 ]
