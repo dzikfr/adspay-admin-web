@@ -15,20 +15,26 @@ interface AuthState {
   clearAuth: () => void
 }
 
-export const useAuthStore = create<AuthState>(set => ({
-  user: null,
-  accessToken: null,
-  refreshToken: null,
-  setAuth: (user, accessToken, refreshToken) => {
-    secureStorage.setItem('accessToken', accessToken)
-    secureStorage.setItem('refreshToken', refreshToken)
-    secureStorage.setItem('user', JSON.stringify(user))
-    set({ user, accessToken, refreshToken })
-  },
-  clearAuth: () => {
-    secureStorage.removeItem('accessToken')
-    secureStorage.removeItem('refreshToken')
-    secureStorage.removeItem('user')
-    set({ user: null, accessToken: null, refreshToken: null })
-  },
-}))
+export const useAuthStore = create<AuthState>(set => {
+  const savedAccessToken = secureStorage.getItem('accessToken')
+  const savedRefreshToken = secureStorage.getItem('refreshToken')
+  const savedUser = secureStorage.getItem('user')
+
+  return {
+    user: savedUser ? JSON.parse(savedUser) : null,
+    accessToken: savedAccessToken,
+    refreshToken: savedRefreshToken,
+    setAuth: (user, accessToken, refreshToken) => {
+      secureStorage.setItem('accessToken', accessToken)
+      secureStorage.setItem('refreshToken', refreshToken)
+      secureStorage.setItem('user', JSON.stringify(user))
+      set({ user, accessToken, refreshToken })
+    },
+    clearAuth: () => {
+      secureStorage.removeItem('accessToken')
+      secureStorage.removeItem('refreshToken')
+      secureStorage.removeItem('user')
+      set({ user: null, accessToken: null, refreshToken: null })
+    },
+  }
+})
