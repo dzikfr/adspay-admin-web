@@ -14,6 +14,8 @@ export function LoginPage() {
     e.preventDefault()
     try {
       await login(email, password)
+      //baru ditambahin dulu sementara
+      localStorage.setItem('isLoggedIn', 'true')
       navigate('/')
       toast.success('Login berhasil!')
     } catch {
