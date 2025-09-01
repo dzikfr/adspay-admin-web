@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Search, Settings, ChevronRight, Bird } from 'lucide-react'
+import { Home, Inbox, ChevronRight, Bird, User } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -23,10 +23,12 @@ import { useAuthStore } from '@/stores/authStore'
 const items: MenuItemType[] = [
   { title: 'Home', url: '/', icon: Home },
   { title: 'About', url: '/about', icon: Inbox },
-  { title: 'Calendar', url: '/calendar', icon: Calendar },
-  { title: 'Search', url: '/search', icon: Search },
-  { title: 'Settings', url: '/settings', icon: Settings },
   { title: 'Demo', url: '/demo', icon: Bird },
+  {
+    title: 'User',
+    icon: User,
+    children: [{ title: 'Saldo', url: '/saldo' }],
+  },
   {
     title: 'Procurement',
     icon: Inbox,
