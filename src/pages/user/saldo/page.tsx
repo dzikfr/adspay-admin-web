@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
 
 interface Saldo {
   userId: string;
@@ -112,36 +118,39 @@ const ListSaldo: React.FC = () => {
       </div>
 
       {/* Table */}
-      <Table className="border border-white mb-4">
-        <TableHeader>
+      <Table className="mb-4 border border-gray-300 dark:border-gray-700">
+        <TableHeader className="bg-gray-100 dark:bg-gray-800">
           <TableRow>
-            <TableHead onClick={() => requestSort("userId")} className="cursor-pointer border border-white">
+            <TableHead onClick={() => requestSort("userId")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
               User ID{getSortIndicator("userId")}
             </TableHead>
-            <TableHead onClick={() => requestSort("nama")} className="cursor-pointer border border-white">
+            <TableHead onClick={() => requestSort("nama")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
               Nama{getSortIndicator("nama")}
             </TableHead>
-            <TableHead onClick={() => requestSort("saldo")} className="cursor-pointer border border-white">
+            <TableHead onClick={() => requestSort("saldo")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
               Saldo{getSortIndicator("saldo")}
             </TableHead>
-            <TableHead onClick={() => requestSort("status")} className="cursor-pointer border border-white">
+            <TableHead onClick={() => requestSort("status")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
               Status{getSortIndicator("status")}
             </TableHead>
-            <TableHead onClick={() => requestSort("category")} className="cursor-pointer border border-white">
+            <TableHead onClick={() => requestSort("category")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
               Category{getSortIndicator("category")}
             </TableHead>
-            <TableHead className="border border-white w-36">Aksi</TableHead>
+            <TableHead className="border border-gray-300 dark:border-gray-700 w-36">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedData.map((s) => (
-            <TableRow key={s.userId} className="border border-white">
-              <TableCell className="border border-white">{s.userId}</TableCell>
-              <TableCell className="border border-white">{s.nama}</TableCell>
-              <TableCell className="border border-white">Rp {s.saldo.toLocaleString()}</TableCell>
-              <TableCell className="border border-white">{s.status}</TableCell>
-              <TableCell className="border border-white">{s.category}</TableCell>
-              <TableCell className="flex gap-1 justify-center border border-white">
+            <TableRow
+              key={s.userId}
+              className="border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+            >
+              <TableCell className="border border-gray-300 dark:border-gray-700">{s.userId}</TableCell>
+              <TableCell className="border border-gray-300 dark:border-gray-700">{s.nama}</TableCell>
+              <TableCell className="border border-gray-300 dark:border-gray-700">Rp {s.saldo.toLocaleString()}</TableCell>
+              <TableCell className="border border-gray-300 dark:border-gray-700">{s.status}</TableCell>
+              <TableCell className="border border-gray-300 dark:border-gray-700">{s.category}</TableCell>
+              <TableCell className="flex gap-1 justify-center border border-gray-300 dark:border-gray-700">
                 <Link to={`/saldo/${s.userId}`}>
                   <Button size="sm" variant="default">Detail</Button>
                 </Link>
@@ -157,7 +166,13 @@ const ListSaldo: React.FC = () => {
       <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4">
         <div className="flex items-center gap-2">
           <span>Rows per page:</span>
-          <Select value={rowsPerPage.toString()} onValueChange={(val) => { setRowsPerPage(Number(val)); setCurrentPage(1); }}>
+          <Select
+            value={rowsPerPage.toString()}
+            onValueChange={(val) => {
+              setRowsPerPage(Number(val));
+              setCurrentPage(1);
+            }}
+          >
             <SelectTrigger className="w-20 h-10">
               <SelectValue />
             </SelectTrigger>
@@ -171,9 +186,13 @@ const ListSaldo: React.FC = () => {
         </div>
 
         <div className="flex items-center gap-2 mt-2 sm:mt-0">
-          <Button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>Prev</Button>
+          <Button onClick={() => setCurrentPage((p) => Math.max(p - 1, 1))} disabled={currentPage === 1}>
+            Prev
+          </Button>
           <span>Page {currentPage} of {totalPages}</span>
-          <Button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>Next</Button>
+          <Button onClick={() => setCurrentPage((p) => Math.min(p + 1, totalPages))} disabled={currentPage === totalPages}>
+            Next
+          </Button>
         </div>
       </div>
     </div>
