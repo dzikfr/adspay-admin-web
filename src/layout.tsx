@@ -15,18 +15,17 @@ export default function Layout() {
       <div className="flex h-screen w-screen">
         <AppSidebar />
         <main className="flex-1 overflow-auto">
-          <div className="p-4 flex items-center border-b">
+          <div className="relative p-4 flex items-center border-b">
             <SidebarTrigger />
-
-            <div className="flex-1">
+            <div className="ml-4">
               <AppBreadcrumb />
             </div>
 
-            <div className="flex-1 flex justify-center">
+            <div className="absolute left-1/2 transform -translate-x-1/2">
               <span className="font-bold">Admin Dashboard</span>
             </div>
 
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
               <ModeToggle />
             </div>
           </div>
