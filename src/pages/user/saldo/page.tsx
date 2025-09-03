@@ -1,5 +1,5 @@
 import React, { useState, useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import {
   Table,
   TableHeader,
@@ -18,6 +18,7 @@ import {
   SelectItem,
 } from "@/components/ui/select";
 
+/* ---------- Types ---------- */
 interface Saldo {
   userId: string;
   nama: string;
@@ -26,15 +27,17 @@ interface Saldo {
   category: "Register" | "Unregister";
 }
 
-const ListSaldo: React.FC = () => {
-  const [saldoList] = useState<Saldo[]>([
-    { userId: "U001", nama: "Andi", saldo: 500000, status: "Active", category: "Register" },
-    { userId: "U002", nama: "Budi", saldo: 300000, status: "Inactive", category: "Unregister" },
-    { userId: "U003", nama: "Cici", saldo: 700000, status: "Active", category: "Register" },
-    { userId: "U004", nama: "Doni", saldo: 200000, status: "Active", category: "Unregister" },
-    { userId: "U005", nama: "Eka", saldo: 1000000, status: "Inactive", category: "Register" },
-  ]);
+/* ---------- Dummy Data ---------- */
+const saldoData: Saldo[] = [
+  { userId: "U001", nama: "Andi", saldo: 500000, status: "Active", category: "Register" },
+  { userId: "U002", nama: "Budi", saldo: 300000, status: "Inactive", category: "Unregister" },
+  { userId: "U003", nama: "Cici", saldo: 700000, status: "Active", category: "Register" },
+  { userId: "U004", nama: "Doni", saldo: 200000, status: "Active", category: "Unregister" },
+  { userId: "U005", nama: "Eka", saldo: 1000000, status: "Inactive", category: "Register" },
+];
 
+/* ---------- ListSaldo Page ---------- */
+const ListSaldo: React.FC = () => {
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
@@ -43,7 +46,7 @@ const ListSaldo: React.FC = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
   const sortedFilteredData = useMemo(() => {
-    let filtered = saldoList.filter(
+    let filtered = saldoData.filter(
       (s) =>
         (s.userId.toLowerCase().includes(search.toLowerCase()) ||
           s.nama.toLowerCase().includes(search.toLowerCase())) &&
@@ -60,7 +63,7 @@ const ListSaldo: React.FC = () => {
     }
 
     return filtered;
-  }, [saldoList, search, filterStatus, filterCategory, sortConfig]);
+  }, [search, filterStatus, filterCategory, sortConfig]);
 
   const totalPages = Math.ceil(sortedFilteredData.length / rowsPerPage);
   const paginatedData = sortedFilteredData.slice(
@@ -118,39 +121,39 @@ const ListSaldo: React.FC = () => {
       </div>
 
       {/* Table */}
-      <Table className="mb-4 border border-gray-300 dark:border-gray-700">
+      <Table className="mb-4 border-collapse border border-black dark:border-white">
         <TableHeader className="bg-gray-100 dark:bg-gray-800">
           <TableRow>
-            <TableHead onClick={() => requestSort("userId")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
+            <TableHead onClick={() => requestSort("userId")} className="cursor-pointer border border-black dark:border-white">
               User ID{getSortIndicator("userId")}
             </TableHead>
-            <TableHead onClick={() => requestSort("nama")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
+            <TableHead onClick={() => requestSort("nama")} className="cursor-pointer border border-black dark:border-white">
               Nama{getSortIndicator("nama")}
             </TableHead>
-            <TableHead onClick={() => requestSort("saldo")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
+            <TableHead onClick={() => requestSort("saldo")} className="cursor-pointer border border-black dark:border-white">
               Saldo{getSortIndicator("saldo")}
             </TableHead>
-            <TableHead onClick={() => requestSort("status")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
+            <TableHead onClick={() => requestSort("status")} className="cursor-pointer border border-black dark:border-white">
               Status{getSortIndicator("status")}
             </TableHead>
-            <TableHead onClick={() => requestSort("category")} className="cursor-pointer border border-gray-300 dark:border-gray-700">
+            <TableHead onClick={() => requestSort("category")} className="cursor-pointer border border-black dark:border-white">
               Category{getSortIndicator("category")}
             </TableHead>
-            <TableHead className="border border-gray-300 dark:border-gray-700 w-36">Aksi</TableHead>
+            <TableHead className="border border-black dark:border-white w-36">Aksi</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {paginatedData.map((s) => (
             <TableRow
               key={s.userId}
-              className="border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700"
+              className="border border-black dark:border-white hover:bg-gray-50 dark:hover:bg-gray-700"
             >
-              <TableCell className="border border-gray-300 dark:border-gray-700">{s.userId}</TableCell>
-              <TableCell className="border border-gray-300 dark:border-gray-700">{s.nama}</TableCell>
-              <TableCell className="border border-gray-300 dark:border-gray-700">Rp {s.saldo.toLocaleString()}</TableCell>
-              <TableCell className="border border-gray-300 dark:border-gray-700">{s.status}</TableCell>
-              <TableCell className="border border-gray-300 dark:border-gray-700">{s.category}</TableCell>
-              <TableCell className="flex gap-1 justify-center border border-gray-300 dark:border-gray-700">
+              <TableCell className="border border-black dark:border-white">{s.userId}</TableCell>
+              <TableCell className="border border-black dark:border-white">{s.nama}</TableCell>
+              <TableCell className="border border-black dark:border-white">Rp {s.saldo.toLocaleString()}</TableCell>
+              <TableCell className="border border-black dark:border-white">{s.status}</TableCell>
+              <TableCell className="border border-black dark:border-white">{s.category}</TableCell>
+              <TableCell className="flex gap-1 justify-center border border-black dark:border-white">
                 <Link to={`/saldo/${s.userId}`}>
                   <Button size="sm" variant="default">Detail</Button>
                 </Link>
@@ -199,4 +202,56 @@ const ListSaldo: React.FC = () => {
   );
 };
 
-export { ListSaldo };
+/* ---------- DetailSaldo Page ---------- */
+const DetailSaldo: React.FC = () => {
+  const { userId } = useParams<{ userId: string }>();
+  const saldo = saldoData.find((s) => s.userId === userId);
+
+  if (!saldo) {
+    return (
+      <div className="p-4">
+        <h1 className="text-xl font-bold">Data tidak ditemukan</h1>
+        <Link to="/saldo">
+          <Button className="mt-4">Kembali</Button>
+        </Link>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Detail Saldo - {saldo.nama}</h1>
+
+      <Table className="border-collapse border border-black dark:border-white w-full">
+        <TableBody>
+          <TableRow className="border border-black dark:border-white">
+            <TableCell className="font-semibold border border-black dark:border-white">User ID</TableCell>
+            <TableCell className="border border-black dark:border-white">{saldo.userId}</TableCell>
+          </TableRow>
+          <TableRow className="border border-black dark:border-white">
+            <TableCell className="font-semibold border border-black dark:border-white">Nama</TableCell>
+            <TableCell className="border border-black dark:border-white">{saldo.nama}</TableCell>
+          </TableRow>
+          <TableRow className="border border-black dark:border-white">
+            <TableCell className="font-semibold border border-black dark:border-white">Saldo</TableCell>
+            <TableCell className="border border-black dark:border-white">Rp {saldo.saldo.toLocaleString()}</TableCell>
+          </TableRow>
+          <TableRow className="border border-black dark:border-white">
+            <TableCell className="font-semibold border border-black dark:border-white">Status</TableCell>
+            <TableCell className="border border-black dark:border-white">{saldo.status}</TableCell>
+          </TableRow>
+          <TableRow className="border border-black dark:border-white">
+            <TableCell className="font-semibold border border-black dark:border-white">Category</TableCell>
+            <TableCell className="border border-black dark:border-white">{saldo.category}</TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
+
+      <Link to="/saldo">
+        <Button className="mt-6">Kembali ke List</Button>
+      </Link>
+    </div>
+  );
+};
+
+export { ListSaldo, DetailSaldo };
