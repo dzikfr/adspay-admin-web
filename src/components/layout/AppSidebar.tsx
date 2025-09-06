@@ -18,7 +18,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/component
 import type { MenuItemType } from '@/types/menu_item'
 import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
+import { logout } from '@/services/auth/auth'
 
 const items: MenuItemType[] = [
   { title: 'Home', url: '/', icon: Home },
@@ -40,13 +40,12 @@ const items: MenuItemType[] = [
 export function AppSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const clearAuth = useAuthStore(state => state.clearAuth)
 
   const isActive = (url?: string) =>
     !!url && (location.pathname === url || location.pathname.startsWith(url + '/'))
 
   const handleLogout = () => {
-    clearAuth()
+    logout()
     navigate('/login')
   }
 

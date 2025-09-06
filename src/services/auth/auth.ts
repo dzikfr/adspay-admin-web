@@ -57,3 +57,17 @@ export const refreshToken = async () => {
 
   return access_token
 }
+
+export const logout = async () => {
+  const body = new URLSearchParams({
+    client_id: 'adspay-dashboard-client',
+    token: useAuthStore.getState().refreshToken || '',
+    token_type_hint: 'refresh_token',
+  })
+
+  await axios.post<LoginResponse>(API.Logout, body, {
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  })
+
+  useAuthStore.getState().clearAuth()
+}
