@@ -14,11 +14,22 @@ import {
   SidebarMenuSubItem,
   SidebarMenuSubButton,
 } from '@/components/ui/sidebar'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog'
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible'
 import type { MenuItemType } from '@/types/menu_item'
 import { LogOut } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { useAuthStore } from '@/stores/authStore'
+import { logout } from '@/services/auth/auth'
 
 const items: MenuItemType[] = [
   { title: 'Home', url: '/', icon: Home },
@@ -42,13 +53,12 @@ const items: MenuItemType[] = [
 export function AppSidebar() {
   const location = useLocation()
   const navigate = useNavigate()
-  const clearAuth = useAuthStore(state => state.clearAuth)
 
   const isActive = (url?: string) =>
     !!url && (location.pathname === url || location.pathname.startsWith(url + '/'))
 
   const handleLogout = () => {
-    clearAuth()
+    logout()
     navigate('/login')
   }
 
@@ -136,10 +146,26 @@ export function AppSidebar() {
         <div className="mt-auto p-2">
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton onClick={handleLogout}>
-                <LogOut className="size-4" />
-                <span>Logout</span>
-              </SidebarMenuButton>
+              <AlertDialog>
+                <AlertDialogTrigger asChild>
+                  <SidebarMenuButton>
+                    <LogOut className="size-4" />
+                    <span>Logout</span>
+                  </SidebarMenuButton>
+                </AlertDialogTrigger>
+                <AlertDialogContent>
+                  <AlertDialogHeader>
+                    <AlertDialogTitle>Konfirmasi Logout</AlertDialogTitle>
+                    <AlertDialogDescription>
+                      Apakah kamu yakin ingin keluar dari aplikasi?
+                    </AlertDialogDescription>
+                  </AlertDialogHeader>
+                  <AlertDialogFooter>
+                    <AlertDialogCancel>Batal</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleLogout}>Logout</AlertDialogAction>
+                  </AlertDialogFooter>
+                </AlertDialogContent>
+              </AlertDialog>
             </SidebarMenuItem>
           </SidebarMenu>
         </div>
