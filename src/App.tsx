@@ -7,8 +7,9 @@ import { LoginPage } from '@/pages/login/page'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoutes'
 import { Toaster } from '@/components/ui/sonner'
-import { ListSaldo } from '@/pages/user/saldo/page'
-import { DetailSaldo } from '@/pages/user/saldo/details/page'
+// import { ListSaldo,DetailSaldo } from '@/pages/user/saldo/page'
+import { SaldoPage } from '@/pages/user/saldo/page';
+//import { DetailSaldo } from '@/pages/user/saldo/details/page'
 
 function App() {
   return (
@@ -22,8 +23,9 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/about" element={<About />} />
             <Route path="/demo" element={<DemoPage />} />
-            <Route path="/saldo" element={<ListSaldo />} />
-            <Route path="/saldo/:userId" element={<DetailSaldo />} />
+            <Route path="/saldo/*" element={<SaldoPage />} />
+            {/* <Route path="/saldo" element={<ListSaldo />} /> */}
+            {/* <Route path="/saldo/:userId" element={<DetailSaldo />} /> */}
           </Route>
         </Route>
       </Routes>

@@ -13,11 +13,11 @@
 import { Navigate, Outlet } from 'react-router-dom'
 
 export function ProtectedRoute() {
-  const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
+  // const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
 
-  if (!isLoggedIn) {
-    return <Navigate to="/login" replace />
-  }
+  // if (!isLoggedIn) {
+  //   return <Navigate to="/login" replace />
+  // }
 
   return <Outlet />
 }
