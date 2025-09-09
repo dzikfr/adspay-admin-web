@@ -10,7 +10,7 @@
 // }
 
 // sementara gua ubah kesini dulu buat ke saldo nanti dibahas lagi
-import { Navigate, Outlet } from 'react-router-dom'
+import {Outlet } from 'react-router-dom'
 
 export function ProtectedRoute() {
   // const isLoggedIn = localStorage.getItem('isLoggedIn') === 'true'
