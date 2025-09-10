@@ -1,8 +1,8 @@
 const MODE = import.meta.env.VITE_MODE || 'development'
-const BASE_URL =
+export const BASE_URL =
   MODE === 'production' ? import.meta.env.VITE_BASE_URL : import.meta.env.VITE_BASE_URL_DEV
 
-const AUTH_URL =
+export const AUTH_URL =
   MODE === 'production' ? import.meta.env.VITE_AUTH_URL : import.meta.env.VITE_AUTH_URL_DEV
 
 export const API = {
