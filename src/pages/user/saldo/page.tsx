@@ -215,16 +215,26 @@ const DetailSaldo: React.FC<DetailSaldoProps> = ({ saldoData, updateStatus }) =>
   const [sortOrder, setSortOrder] = useState<"asc"|"desc">("desc");
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   if(!saldo) return <div className="p-4">Data tidak ditemukan</div>;
 
-  const toggleStatus = ()=>{
-    const newStatus = saldo.status==="Active"?"Inactive":"Active";
-    updateStatus(saldo.userId,newStatus);
-    alert(`Status berhasil diubah menjadi ${newStatus}`);
-  };
+  // Filter transaksi agar tidak melebihi saldo
+  let runningSaldo = saldo.saldo;
+  const validasiTransaksi = transaksiUser.filter(t => {
+    if (t.jenis.startsWith("Topup")) {
+      runningSaldo += t.nominal;
+      return true;
+    } else {
+      if (runningSaldo - t.nominal >= 0) {
+        runningSaldo -= t.nominal;
+        return true;
+      }
+      return false;
+    }
+  });
 
-  const sortedTransaksi = [...transaksiUser].sort((a,b)=>
+  const sortedTransaksi = [...validasiTransaksi].sort((a,b)=>
     sortOrder==="desc"? new Date(b.tanggal).getTime()-new Date(a.tanggal).getTime()
     : new Date(a.tanggal).getTime()-new Date(b.tanggal).getTime()
   );
@@ -232,11 +242,27 @@ const DetailSaldo: React.FC<DetailSaldoProps> = ({ saldoData, updateStatus }) =>
   const totalPages = Math.ceil(sortedTransaksi.length / itemsPerPage);
   const paginatedTransaksi = sortedTransaksi.slice((currentPage-1)*itemsPerPage, currentPage*itemsPerPage);
 
+  const handleConfirmToggle = () => {
+    const newStatus = saldo.status==="Active"?"Inactive":"Active";
+    updateStatus(saldo.userId,newStatus);
+    setIsModalOpen(false);
+  };
+
   return (
-    <div className="p-4">
+    <div className="p-4 relative">
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">Detail Saldo - {saldo.nama}</h1>
-        <Button onClick={toggleStatus} className={`w-28 font-semibold text-white ${saldo.status==="Active"?"bg-green-600 hover:bg-green-700":"bg-red-600 hover:bg-red-700"}`}>{saldo.status}</Button>
+        <h1 className="text-2xl font-bold">
+          Detail Saldo - {saldo.nama}{" "}
+          <span className={`ml-2 px-2 py-1 text-sm font-semibold rounded-md ${saldo.status==="Active"?"bg-green-100 text-green-800":"bg-red-100 text-red-800"}`}>
+            {saldo.status}
+          </span>
+        </h1>
+        <Button
+          onClick={() => setIsModalOpen(true)}
+          className={`w-28 font-semibold text-white ${saldo.status==="Active"?"bg-red-600 hover:bg-red-700":"bg-green-600 hover:bg-green-700"}`}
+        >
+          {saldo.status==="Active"?"Nonaktifkan":"Aktifkan"}
+        </Button>
       </div>
 
       <Table className="border-collapse border border-black dark:border-white w-full mb-6">
@@ -311,6 +337,34 @@ const DetailSaldo: React.FC<DetailSaldoProps> = ({ saldoData, updateStatus }) =>
       </div>
 
       <Link to="/saldo"><Button className="mt-6 w-32">Kembali ke List</Button></Link>
+
+      {/* Modal Konfirmasi */}
+      {isModalOpen && (
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/20"></div>
+          <div className="relative bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl w-[400px] z-10">
+            <h2 className="text-xl font-bold mb-3">
+              {saldo.status==="Active" ? "Nonaktifkan User" : "Aktifkan User"}
+            </h2>
+            <p className="mb-6">
+              {saldo.status==="Active"
+                ? `Apakah Anda yakin ingin menonaktifkan user ${saldo.nama}? User yang dinonaktifkan tidak dapat melakukan transaksi saldo.`
+                : `Apakah Anda yakin ingin mengaktifkan kembali user ${saldo.nama}? User yang aktif dapat kembali melakukan transaksi saldo.`}
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button variant="outline" onClick={()=>setIsModalOpen(false)}>Batal</Button>
+              <Button
+                onClick={handleConfirmToggle}
+                className={saldo.status==="Active"
+                  ? "bg-red-600 hover:bg-red-700 text-white"
+                  : "bg-green-600 hover:bg-green-700 text-white"}
+              >
+                {saldo.status==="Active" ? "Nonaktifkan" : "Aktifkan"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
