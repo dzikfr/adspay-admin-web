@@ -1,4 +1,4 @@
-import { Home, Inbox, ChevronRight, Bird } from 'lucide-react'
+import { Home, Inbox, ChevronRight, Bird, User } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -36,6 +36,11 @@ const items: MenuItemType[] = [
   { title: 'About', url: '/about', icon: Inbox },
   { title: 'Demo', url: '/demo', icon: Bird },
   {
+    title: 'User',
+    icon: User,
+    children: [{ title: 'Saldo', url: '/saldo' }],
+  },
+  {
     title: 'Procurement',
     icon: Inbox,
     children: [
@@ -54,7 +59,7 @@ export function AppSidebar() {
 
   const handleLogout = () => {
     logout()
-    navigate('/login')
+    navigate('/')
   }
 
   return (
