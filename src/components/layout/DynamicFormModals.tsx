@@ -4,7 +4,8 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
-import { CalendarIcon } from 'lucide-react'
+import { CalendarIcon, Eye, EyeOff } from 'lucide-react'
+import { useState } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Form,
@@ -44,6 +45,7 @@ interface DynamicFormModalProps<T extends z.ZodType<any, any>> {
   isEdit?: boolean
   editData?: Partial<z.infer<T>>
   submitLabel?: string
+  onSuccess?: () => void
 }
 
 export function DynamicFormModal<T extends z.ZodType<any, any>>({
@@ -55,7 +57,17 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
   isEdit = false,
   editData,
   submitLabel,
+  onSuccess,
 }: DynamicFormModalProps<T>) {
+  const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({})
+
+  const togglePasswordVisibility = (fieldName: string) => {
+    setVisiblePasswords(prev => ({
+      ...prev,
+      [fieldName]: !prev[fieldName],
+    }))
+  }
+
   const form = useForm<z.infer<T>>({
     resolver: zodResolver(schema) as any,
     defaultValues: getDefaultValues<T>(fields, editData) as import('react-hook-form').DefaultValues<
@@ -67,6 +79,7 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
     await onSubmit(data)
     form.reset(getDefaultValues<T>(fields) as any)
     onClose()
+    if (onSuccess) onSuccess()
   }
 
   return (
@@ -127,9 +140,7 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
                             rhfField.onChange(file)
                           }}
                         />
-                      ) : field.type === 'text' ||
-                        field.type === 'number' ||
-                        field.type === 'password' ? (
+                      ) : field.type === 'text' || field.type === 'number' ? (
                         <Input
                           type={field.type}
                           placeholder={field.placeholder}
@@ -142,6 +153,27 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
                           {...rhfField}
                           value={rhfField.value ?? ''}
                         />
+                      ) : field.type === 'password' ? (
+                        <div className="relative">
+                          <Input
+                            type={visiblePasswords[field.name] ? 'text' : 'password'}
+                            placeholder={field.placeholder}
+                            {...rhfField}
+                            value={rhfField.value ?? ''}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => togglePasswordVisibility(field.name)}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                            tabIndex={-1}
+                          >
+                            {visiblePasswords[field.name] ? (
+                              <EyeOff className="h-4 w-4" />
+                            ) : (
+                              <Eye className="h-4 w-4" />
+                            )}
+                          </button>
+                        </div>
                       ) : field.type === 'select' ? (
                         <Select value={rhfField.value} onValueChange={rhfField.onChange}>
                           <SelectTrigger className="w-full">

@@ -17,7 +17,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { ArrowUpDown, ArrowRightFromLine, ArrowLeftFromLine } from 'lucide-react'
+import { ArrowUpDown, ArrowRightFromLine, ArrowLeftFromLine, Check, X } from 'lucide-react'
 import { type DynamicTableProps } from '@/types/table'
 
 export function DynamicTable<T extends object>({
@@ -43,7 +43,23 @@ export function DynamicTable<T extends object>({
             <ArrowUpDown className="h-4 w-4" />
           </Button>
         ),
-        cell: ({ row }) => (col.render ? col.render(row.original) : (row.original as any)[col.key]),
+        cell: ({ row }) => {
+          const value = (row.original as any)[col.key]
+
+          if (col.render) {
+            return col.render(row.original)
+          }
+
+          if (typeof value === 'boolean') {
+            return value ? (
+              <Check className="text-green-600 h-4 w-4" />
+            ) : (
+              <X className="text-red-600 h-4 w-4" />
+            )
+          }
+
+          return value
+        },
       })),
     [columns]
   )

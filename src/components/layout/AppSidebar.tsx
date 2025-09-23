@@ -1,4 +1,4 @@
-import { Home, Inbox, ChevronRight, Bird, User } from 'lucide-react'
+import { Home, Inbox, ChevronRight, Bird, User, UserCog } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -41,11 +41,16 @@ const items: MenuItemType[] = [
     children: [{ title: 'Saldo', url: '/saldo' }],
   },
   {
-    title: 'Procurement',
+    title: 'Admin',
+    icon: UserCog,
+    children: [{ title: 'List Admin', url: '/list-admin' }],
+  },
+  {
+    title: 'Master Data',
     icon: Inbox,
     children: [
-      { title: 'Budgeting', url: '/budgeting' },
-      { title: 'Purchase Request', url: '/purchase-request' },
+      { title: 'Master Bank', url: '/master-bank' },
+      { title: 'Master Document', url: '/master-document' },
     ],
   },
 ]

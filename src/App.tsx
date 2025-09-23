@@ -10,6 +10,7 @@ import { useAuthStore } from '@/stores/authStore'
 import { redirectToLogin } from '@/utils/auth'
 import { useTokenRefresher } from '@/hooks/useTokenRefresher'
 import { SaldoPage } from '@/pages/user/saldo/page'
+import { ListAdminPage } from './pages/admin/page'
 
 function App() {
   const { accessToken } = useAuthStore()
@@ -30,6 +31,7 @@ function App() {
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
           <Route path="/demo" element={<DemoPage />} />
+          <Route path="/list-admin" element={<ListAdminPage />} />
           <Route path="/saldo/*" element={<SaldoPage />} />
         </Route>
       </Routes>
