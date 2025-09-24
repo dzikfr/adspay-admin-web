@@ -17,4 +17,13 @@ export default defineConfig({
     environment: 'jsdom',
     setupFiles: './src/setupTests.ts',
   },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://38.47.94.165:3124',
+        changeOrigin: true,
+        rewrite: path => path.replace(/^\/api/, '/api'),
+      },
+    },
+  },
 })
