@@ -2,11 +2,19 @@ import { DynamicFormModal } from '@/components/layout/DynamicFormModals'
 import { DynamicTable } from '@/components/layout/DynamicalTable'
 import { useState, useEffect } from 'react'
 import { type ColumnConfig } from '@/types/table'
-import { Trash, Pencil, DiamondPlus } from 'lucide-react'
+import { Power, PowerOff, Pencil, DiamondPlus, KeySquare } from 'lucide-react'
 import { ButtonActionDynamic } from '@/components/layout/ButtonActionDynamic'
-import { createAdminFields, updateAdminFields } from './field'
-import { createAdminSchema, updateAdminSchema } from './schema'
-import { getListAdmin, createAdmin, updateAdmin } from '@/services/user/admin'
+import { createAdminFields, updateAdminFields, resetPasswordAdminFields } from './field'
+import { createAdminSchema, updateAdminSchema, resetPasswordAdminSchema } from './schema'
+import {
+  getListAdmin,
+  createAdmin,
+  updateAdmin,
+  activateAdmin,
+  deactivateAdmin,
+  resetPasswordAdmin,
+} from '@/services/user/admin'
+import { toast } from 'sonner'
 
 const userColumns: ColumnConfig<AdminType>[] = [
   { key: 'username', label: 'Username' },
@@ -26,6 +34,8 @@ export function ListAdminPage() {
   const [admins, setAdmins] = useState<AdminType[]>([])
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [updateModalOpen, setUpdateModalOpen] = useState(false)
+  const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false)
+  const [selectedAdmin, setSelectedAdmin] = useState<AdminType | null>(null)
 
   const fetchUsers = async () => {
     try {
@@ -41,6 +51,7 @@ export function ListAdminPage() {
       )
     } catch (err) {
       console.error('Failed fetching admins:', err)
+      toast.error('Failed fetching admins')
     }
   }
 
@@ -68,13 +79,47 @@ export function ListAdminPage() {
               icon={<Pencil className="h-4 w-4" />}
               tooltip="Edit"
               variant="default"
-              onClick={() => setUpdateModalOpen(true)}
+              onClick={() => {
+                setSelectedAdmin(row)
+                setUpdateModalOpen(true)
+              }}
             />
+            {/* Jika enabled false, tampilkan tombol aktifkan */}
+            {row.enabled === false && (
+              <ButtonActionDynamic
+                icon={<Power className="h-4 w-4" />}
+                tooltip="Aktifkan"
+                variant="default"
+                onClick={async () => {
+                  await activateAdmin(row.username)
+                  toast.success(`Admin ${row.username} berhasil diaktifkan`)
+                  await fetchUsers()
+                }}
+              />
+            )}
+
+            {/* Jika enabled true, tampilkan tombol non-aktifkan */}
+            {row.enabled === true && (
+              <ButtonActionDynamic
+                icon={<PowerOff className="h-4 w-4" />}
+                tooltip="Non-aktifkan"
+                variant="default"
+                onClick={async () => {
+                  await deactivateAdmin(row.username)
+                  toast.success(`Admin ${row.username} berhasil dinon-aktifkan`)
+                  await fetchUsers()
+                }}
+              />
+            )}
+
             <ButtonActionDynamic
-              icon={<Trash className="h-4 w-4" />}
-              tooltip="Hapus"
-              variant="destructive"
-              onClick={() => console.log('Delete', row)}
+              icon={<KeySquare className="h-4 w-4" />}
+              tooltip="Change Password"
+              variant="default"
+              onClick={() => {
+                setSelectedAdmin(row)
+                setChangePasswordModalOpen(true)
+              }}
             />
           </div>
         )}
@@ -89,7 +134,10 @@ export function ListAdminPage() {
         onSubmit={async values => {
           await createAdmin(values.username, values.email, values.password)
         }}
-        onSuccess={fetchUsers}
+        onSuccess={async () => {
+          toast.success('Admin berhasil ditambahkan')
+          await fetchUsers()
+        }}
       />
 
       {/* Modals Update */}
@@ -98,11 +146,40 @@ export function ListAdminPage() {
         fields={updateAdminFields}
         isOpen={updateModalOpen}
         isEdit={true}
-        onClose={() => setUpdateModalOpen(false)}
+        editData={selectedAdmin ? { email: selectedAdmin.email } : undefined}
+        onClose={() => {
+          setUpdateModalOpen(false)
+          setSelectedAdmin(null)
+        }}
         onSubmit={async values => {
-          if (admins.length > 0) {
-            await updateAdmin(admins[2].id.toString(), values.email)
+          if (selectedAdmin) {
+            await updateAdmin(selectedAdmin.username.toString(), values.email)
           }
+        }}
+        onSuccess={async () => {
+          toast.success(`Admin ${selectedAdmin?.username} berhasil diupdate`)
+          await fetchUsers()
+        }}
+      />
+
+      {/* Modals Change Password */}
+      <DynamicFormModal
+        schema={resetPasswordAdminSchema}
+        fields={resetPasswordAdminFields}
+        isOpen={changePasswordModalOpen}
+        isEdit={true}
+        onClose={() => {
+          setChangePasswordModalOpen(false)
+          setSelectedAdmin(null)
+        }}
+        onSubmit={async values => {
+          if (selectedAdmin) {
+            await resetPasswordAdmin(selectedAdmin.username.toString(), values.newPassword)
+          }
+        }}
+        onSuccess={async () => {
+          toast.success(`Password Admin ${selectedAdmin?.username} berhasil diubah`)
+          await fetchUsers()
         }}
       />
     </>

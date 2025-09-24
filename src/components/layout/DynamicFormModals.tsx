@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Calendar } from '@/components/ui/calendar'
 import { format } from 'date-fns'
 import { CalendarIcon, Eye, EyeOff } from 'lucide-react'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
 import {
   Form,
@@ -74,6 +74,12 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
       z.infer<T>
     >,
   })
+
+  useEffect(() => {
+    if (isOpen) {
+      form.reset(getDefaultValues<T>(fields, editData) as any)
+    }
+  }, [editData, isOpen])
 
   const handleSubmit = async (data: z.infer<T>) => {
     await onSubmit(data)

@@ -19,9 +19,8 @@ interface GlobalResponse {
   data: null | undefined | string | Record<string, any>
 }
 
-const { accessToken } = useAuthStore.getState()
-
 export const getListAdmin = async () => {
+  const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No refresh token')
 
   const res = await axios.get<GetListAdmin>(`${import.meta.env.VITE_BASE_URL}/api/web/admin`, {
@@ -36,6 +35,9 @@ export const getListAdmin = async () => {
 }
 
 export const createAdmin = async (username: string, email: string, password: string) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
   const res = await axios.post<GlobalResponse>(
     `${import.meta.env.VITE_BASE_URL}/api/web/admin`,
     { username, email, password },
@@ -52,9 +54,12 @@ export const createAdmin = async (username: string, email: string, password: str
   return resp_message
 }
 
-export const updateAdmin = async (id: string, email: string) => {
+export const updateAdmin = async (username: string, email: string) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
   const res = await axios.put<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${id}`,
+    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}`,
     { email },
     {
       headers: {
@@ -69,9 +74,13 @@ export const updateAdmin = async (id: string, email: string) => {
   return resp_message
 }
 
-export const activateAdmin = async (id: string) => {
+export const activateAdmin = async (username: string) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
   const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${id}/activate`,
+    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/activate`,
+    null,
     {
       headers: {
         'Content-Type': 'application/json',
@@ -85,9 +94,32 @@ export const activateAdmin = async (id: string) => {
   return resp_message
 }
 
-export const deactivateAdmin = async (id: string) => {
+export const deactivateAdmin = async (username: string) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
   const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${id}/deactivate`,
+    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/deactivate`,
+    null,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  )
+
+  const { resp_message } = res.data
+  return resp_message
+}
+
+export const resetPasswordAdmin = async (username: string, newPassword: string) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
+  const res = await axios.post<GlobalResponse>(
+    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/reset-password`,
+    { newPassword },
     {
       headers: {
         'Content-Type': 'application/json',

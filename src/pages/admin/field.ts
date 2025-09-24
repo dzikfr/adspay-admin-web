@@ -21,3 +21,13 @@ export const createAdminFields: FieldConfig[] = [
 export const updateAdminFields: FieldConfig[] = [
   { name: 'email', label: 'Email', type: 'text', placeholder: 'Masukkan email', required: true },
 ]
+
+export const resetPasswordAdminFields: FieldConfig[] = [
+  {
+    name: 'newPassword',
+    label: 'New Password',
+    type: 'password',
+    placeholder: 'Masukkan password',
+    required: true,
+  },
+]

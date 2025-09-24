@@ -9,3 +9,7 @@ export const createAdminSchema = z.object({
 export const updateAdminSchema = z.object({
   email: z.string().email('Email tidak valid'),
 })
+
+export const resetPasswordAdminSchema = z.object({
+  newPassword: z.string().min(6, 'Password minimal 6 karakter'),
+})
