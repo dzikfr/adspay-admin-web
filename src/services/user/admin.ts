@@ -13,10 +13,44 @@ interface GetListAdmin {
   }[]
 }
 
+interface GetProfile {
+  resp_code: string
+  resp_message: string
+  data: ProfileData
+}
+
+interface ProfileData {
+  username: string
+  email: string
+  roles: UserRole
+}
+
+interface UserRole {
+  roles: string[]
+}
+
 interface GlobalResponse {
   resp_code: string
   resp_message: string
   data: null | undefined | string | Record<string, any>
+}
+
+export const getProfile = async (): Promise<any> => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No refresh token')
+
+  const res = await axios.get<GetProfile>(
+    `${import.meta.env.VITE_BASE_URL}/api/web/admin/profile`,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  )
+
+  const { data } = res.data
+  return data
 }
 
 export const getListAdmin = async () => {

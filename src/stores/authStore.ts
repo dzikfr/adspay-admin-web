@@ -3,6 +3,8 @@ import { secureStorage } from '@/utils/secureStorage'
 
 interface User {
   username: string
+  email?: string
+  roles?: string[]
 }
 
 interface AuthState {
@@ -10,7 +12,7 @@ interface AuthState {
   accessToken: string | null
   refreshToken: string | null
   expiresAt: number | null
-  setAuth: (user: User, accessToken: string, refreshToken: string, expiresAt: number) => void
+  setAuth: (user: User | null, accessToken: string, refreshToken: string, expiresAt: number) => void
   clearAuth: () => void
 }
 

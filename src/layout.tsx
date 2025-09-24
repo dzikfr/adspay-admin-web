@@ -3,8 +3,11 @@ import { AppSidebar } from '@/components/layout/AppSidebar'
 import { Outlet } from 'react-router-dom'
 import { ModeToggle } from '@/components/layout/ModeToggle'
 import { AppBreadcrumb } from './components/layout/AppBreadCrumb'
+import { useAuthStore } from '@/stores/authStore'
 
 export default function Layout() {
+  const user = useAuthStore(state => state.user)
+
   return (
     <SidebarProvider
       style={{
@@ -26,6 +29,7 @@ export default function Layout() {
             </div>
 
             <div className="ml-auto flex items-center gap-2">
+              {user && <span className="text-sm font-medium">Hi, {user.username}</span>}
               <ModeToggle />
             </div>
           </div>

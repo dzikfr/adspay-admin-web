@@ -25,8 +25,7 @@ export const exchangeAuthCode = async (code: string, redirectUri: string) => {
   const { access_token, refresh_token, expires_in } = res.data.data
   const expiresAt = Date.now() + expires_in * 1000
 
-  const user = { username: 'pending-parse' }
-  useAuthStore.getState().setAuth(user, access_token, refresh_token, expiresAt)
+  useAuthStore.getState().setAuth(null, access_token, refresh_token, expiresAt)
 
   return res.data
 }
