@@ -25,7 +25,7 @@ export default function Layout() {
             </div>
 
             <div className="absolute left-1/2 transform -translate-x-1/2">
-              <span className="font-bold">Admin Dashboard</span>
+              <span className="font-bold">AdsPay Dashboard</span>
             </div>
 
             <div className="ml-auto flex items-center gap-2">

@@ -30,4 +30,11 @@ export const resetPasswordAdminFields: FieldConfig[] = [
     placeholder: 'Masukkan password',
     required: true,
   },
+  {
+    name: 'confirmPassword',
+    label: 'Confirm Password',
+    type: 'password',
+    placeholder: 'Konfirmasi password',
+    required: true,
+  },
 ]

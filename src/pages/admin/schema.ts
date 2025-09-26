@@ -10,6 +10,12 @@ export const updateAdminSchema = z.object({
   email: z.string().email('Email tidak valid'),
 })
 
-export const resetPasswordAdminSchema = z.object({
-  newPassword: z.string().min(6, 'Password minimal 6 karakter'),
-})
+export const resetPasswordAdminSchema = z
+  .object({
+    newPassword: z.string().min(6, 'Password minimal 6 karakter'),
+    confirmPassword: z.string().min(6, 'Password minimal 6 karakter'),
+  })
+  .refine(data => data.newPassword === data.confirmPassword, {
+    message: 'Password tidak sesuai',
+    path: ['confirmPassword'],
+  })

@@ -31,22 +31,18 @@ export const exchangeAuthCode = async (code: string, redirectUri: string) => {
 }
 
 export const refreshToken = async () => {
-  const { refreshToken } = useAuthStore.getState()
-  if (!refreshToken) throw new Error('No refresh token')
+  const { refreshToken: currentRefresh, user } = useAuthStore.getState()
+  if (!currentRefresh) throw new Error('No refresh token')
 
   const res = await axios.post<LoginResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/auth/refresh?refreshToken=${refreshToken}`,
+    `${import.meta.env.VITE_BASE_URL}/api/web/auth/refresh?refreshToken=${currentRefresh}`,
     { headers: { 'Content-Type': 'application/json' } }
   )
 
   const { access_token, refresh_token, expires_in } = res.data.data
   const expiresAt = Date.now() + expires_in * 1000
 
-  useAuthStore.setState({
-    accessToken: access_token,
-    refreshToken: refresh_token,
-    expiresAt,
-  })
+  useAuthStore.getState().setAuth(user, access_token, refresh_token, expiresAt)
 
   return access_token
 }
