@@ -1,474 +1,70 @@
-import React, { useState } from 'react'
-import { Routes, Route, useParams, Link } from 'react-router-dom'
-import {
-  Table,
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-} from '@/components/ui/table'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from '@/components/ui/select'
+import React, { useState, useEffect } from 'react'
+import { getListUser } from '@/services/user/end-user'
 
-/* ---------- Types ---------- */
-interface Saldo {
-  userId: string
-  nama: string
-  saldo: number
-  status: 'Active' | 'Inactive'
-  category: 'Register' | 'Unregister'
-}
-
-interface Transaksi {
+type Saldo = {
   id: string
-  userId: string
-  jenis:
-    | 'Topup Shopee'
-    | 'Topup Gopay'
-    | 'Transfer BCA'
-    | 'Transfer OVO'
-    | 'Pembayaran PLN'
-    | 'Pembayaran Pulsa'
-  nominal: number
-  tanggal: string
+  phoneNumber: string
+  status: string
+  registrationStatus: string
+  saldo: number
+  createdAt: string
 }
 
-/* ---------- Dummy Data ---------- */
-const initialSaldoData: Saldo[] = [
-  { userId: 'U001', nama: 'Andi', saldo: 500000, status: 'Active', category: 'Register' },
-  { userId: 'U002', nama: 'Budi', saldo: 300000, status: 'Inactive', category: 'Unregister' },
-  { userId: 'U003', nama: 'Cici', saldo: 700000, status: 'Active', category: 'Register' },
-  { userId: 'U004', nama: 'Doni', saldo: 200000, status: 'Active', category: 'Unregister' },
-  { userId: 'U005', nama: 'Eka', saldo: 1000000, status: 'Inactive', category: 'Register' },
-  { userId: 'U006', nama: 'Fajar', saldo: 450000, status: 'Active', category: 'Unregister' },
-  { userId: 'U007', nama: 'Gita', saldo: 850000, status: 'Inactive', category: 'Register' },
-  { userId: 'U008', nama: 'Hadi', saldo: 950000, status: 'Active', category: 'Unregister' },
-  { userId: 'U009', nama: 'Indra', saldo: 620000, status: 'Active', category: 'Register' },
-  { userId: 'U010', nama: 'Joko', saldo: 410000, status: 'Inactive', category: 'Unregister' },
-  { userId: 'U011', nama: 'Kiki', saldo: 530000, status: 'Active', category: 'Register' },
-  { userId: 'U012', nama: 'Lina', saldo: 770000, status: 'Inactive', category: 'Unregister' },
-]
+export const SaldoPage: React.FC = () => {
+  const [saldoData, setSaldoData] = useState<Saldo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
-/* ---------- Dummy Transaksi ---------- */
-const randomDate = (start: Date, end: Date) => {
-  const d = new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime()))
-  return `${d.getFullYear()}-${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')} ${d.getHours().toString().padStart(2, '0')}:${d.getMinutes().toString().padStart(2, '0')}:${d.getSeconds().toString().padStart(2, '0')}`
-}
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const data = await getListUser()
+        setSaldoData(data)
+      } catch (err) {
+        console.error('Failed fetching saldo:', err)
+        setError('Gagal memuat data saldo')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchData()
+  }, [])
 
-const transaksiJenis: Transaksi['jenis'][] = [
-  'Topup Shopee',
-  'Topup Gopay',
-  'Transfer BCA',
-  'Transfer OVO',
-  'Pembayaran PLN',
-  'Pembayaran Pulsa',
-]
+  if (loading) {
+    return <div className="p-4">Loading...</div>
+  }
 
-const generateTransaksi = (userId: string, jumlah: number) => {
-  return Array.from({ length: jumlah }, (_, i) => ({
-    id: `T${userId}${i + 1}`,
-    userId,
-    jenis: transaksiJenis[Math.floor(Math.random() * transaksiJenis.length)],
-    nominal: Math.floor(Math.random() * 500000) + 50000,
-    tanggal: randomDate(new Date(2025, 0, 1), new Date(2025, 8, 8)),
-  }))
-}
-
-const initialTransaksiData: Transaksi[] = [
-  ...generateTransaksi('U001', 12),
-  ...generateTransaksi('U002', 5),
-  ...generateTransaksi('U003', 20),
-  ...generateTransaksi('U004', 8),
-  ...generateTransaksi('U005', 6),
-  ...generateTransaksi('U006', 0),
-  ...generateTransaksi('U007', 7),
-  ...generateTransaksi('U008', 9),
-  ...generateTransaksi('U009', 0),
-  ...generateTransaksi('U010', 4),
-  ...generateTransaksi('U011', 10),
-  ...generateTransaksi('U012', 3),
-]
-
-/* ---------- ListSaldo ---------- */
-interface ListSaldoProps {
-  saldoData: Saldo[]
-}
-
-const ListSaldo: React.FC<ListSaldoProps> = ({ saldoData }) => {
-  const [search, setSearch] = useState('')
-  const [filterStatus, setFilterStatus] = useState('all')
-  const [filterCategory, setFilterCategory] = useState('all')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-
-  const filteredData = saldoData.filter(
-    s =>
-      (s.userId.toLowerCase().includes(search.toLowerCase()) ||
-        s.nama.toLowerCase().includes(search.toLowerCase())) &&
-      (filterStatus === 'all' || s.status === filterStatus) &&
-      (filterCategory === 'all' || s.category === filterCategory)
-  )
-
-  const totalPages = Math.ceil(filteredData.length / itemsPerPage)
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
+  if (error) {
+    return <div className="p-4 text-red-500">{error}</div>
+  }
 
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Daftar Saldo Virtual User</h1>
-
-      <div className="flex flex-wrap gap-3 mb-6 items-center">
-        <Input
-          placeholder="Cari User ID atau Nama..."
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-          className="w-64 h-10"
-        />
-        <Select value={filterCategory} onValueChange={setFilterCategory}>
-          <SelectTrigger className="w-52 h-10">
-            <SelectValue placeholder="Filter Category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Category</SelectItem>
-            <SelectItem value="Register">Register</SelectItem>
-            <SelectItem value="Unregister">Unregister</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select value={filterStatus} onValueChange={setFilterStatus}>
-          <SelectTrigger className="w-52 h-10">
-            <SelectValue placeholder="Filter Status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">Semua Status</SelectItem>
-            <SelectItem value="Active">Active</SelectItem>
-            <SelectItem value="Inactive">Inactive</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <Table className="mb-2 border-collapse border border-black dark:border-white w-full">
-        <TableHeader className="bg-gray-100 dark:bg-gray-800">
-          <TableRow>
-            <TableHead className="border border-black dark:border-white">User ID</TableHead>
-            <TableHead className="border border-black dark:border-white">Nama</TableHead>
-            <TableHead className="border border-black dark:border-white">Saldo</TableHead>
-            <TableHead className="border border-black dark:border-white">Status</TableHead>
-            <TableHead className="border border-black dark:border-white">Category</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedData.map(s => (
-            <TableRow
-              key={s.userId}
-              className="border border-black dark:border-white hover:bg-gray-50 dark:hover:bg-gray-700"
-            >
-              <TableCell className="border border-black dark:border-white">
-                <Link to={`/saldo/${s.userId}`} className="text-blue-600 hover:underline">
-                  {s.userId}
-                </Link>
-              </TableCell>
-              <TableCell className="border border-black dark:border-white">{s.nama}</TableCell>
-              <TableCell className="border border-black dark:border-white">
-                Rp {s.saldo.toLocaleString()}
-              </TableCell>
-              <TableCell className="border border-black dark:border-white text-center">
-                <span
-                  className={`px-2 py-1 text-sm font-semibold rounded-md ${s.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-                >
-                  {s.status}
-                </span>
-              </TableCell>
-              <TableCell className="border border-black dark:border-white">{s.category}</TableCell>
-            </TableRow>
+      <h1 className="text-xl font-bold mb-4">List Saldo</h1>
+      <table className="table-auto w-full border">
+        <thead>
+          <tr className="bg-gray-100">
+            <th className="px-4 py-2 border">ID</th>
+            <th className="px-4 py-2 border">Phone Number</th>
+            <th className="px-4 py-2 border">Status</th>
+            <th className="px-4 py-2 border">Registration</th>
+            <th className="px-4 py-2 border">Saldo</th>
+            <th className="px-4 py-2 border">Created At</th>
+          </tr>
+        </thead>
+        <tbody>
+          {saldoData.map(item => (
+            <tr key={item.id}>
+              <td className="px-4 py-2 border">{item.id}</td>
+              <td className="px-4 py-2 border">{item.phoneNumber}</td>
+              <td className="px-4 py-2 border">{item.status}</td>
+              <td className="px-4 py-2 border">{item.registrationStatus}</td>
+              <td className="px-4 py-2 border text-right">{item.saldo.toLocaleString()}</td>
+              <td className="px-4 py-2 border">{new Date(item.createdAt).toLocaleDateString()}</td>
+            </tr>
           ))}
-        </TableBody>
-      </Table>
-
-      <div className="flex justify-between items-center mt-2">
-        <div>
-          <span>Row per page: </span>
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={val => {
-              setItemsPerPage(Number(val))
-              setCurrentPage(1)
-            }}
-          >
-            <SelectTrigger className="w-20 h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[10, 15, 20, 50, 100].map(n => (
-                <SelectItem key={n} value={n.toString()}>
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex gap-1">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-            <Button
-              key={num}
-              className={`w-8 ${currentPage === num ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-              onClick={() => setCurrentPage(num)}
-            >
-              {num}
-            </Button>
-          ))}
-        </div>
-      </div>
+        </tbody>
+      </table>
     </div>
-  )
-}
-
-/* ---------- DetailSaldo ---------- */
-interface DetailSaldoProps {
-  saldoData: Saldo[]
-  updateStatus: (userId: string, newStatus: 'Active' | 'Inactive') => void
-}
-
-const DetailSaldo: React.FC<DetailSaldoProps> = ({ saldoData, updateStatus }) => {
-  const { userId } = useParams<{ userId: string }>()
-  const saldo = saldoData.find(s => s.userId === userId)
-  const transaksiUser = initialTransaksiData.filter(t => t.userId === userId)
-
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc')
-  const [currentPage, setCurrentPage] = useState(1)
-  const [itemsPerPage, setItemsPerPage] = useState(10)
-  const [isModalOpen, setIsModalOpen] = useState(false)
-
-  if (!saldo) return <div className="p-4">Data tidak ditemukan</div>
-
-  // Filter transaksi agar tidak melebihi saldo
-  let runningSaldo = saldo.saldo
-  const validasiTransaksi = transaksiUser.filter(t => {
-    if (t.jenis.startsWith('Topup')) {
-      runningSaldo += t.nominal
-      return true
-    } else {
-      if (runningSaldo - t.nominal >= 0) {
-        runningSaldo -= t.nominal
-        return true
-      }
-      return false
-    }
-  })
-
-  const sortedTransaksi = [...validasiTransaksi].sort((a, b) =>
-    sortOrder === 'desc'
-      ? new Date(b.tanggal).getTime() - new Date(a.tanggal).getTime()
-      : new Date(a.tanggal).getTime() - new Date(b.tanggal).getTime()
-  )
-
-  const totalPages = Math.ceil(sortedTransaksi.length / itemsPerPage)
-  const paginatedTransaksi = sortedTransaksi.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  )
-
-  const handleConfirmToggle = () => {
-    const newStatus = saldo.status === 'Active' ? 'Inactive' : 'Active'
-    updateStatus(saldo.userId, newStatus)
-    setIsModalOpen(false)
-  }
-
-  return (
-    <div className="p-4 relative">
-      <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-bold">
-          Detail Saldo - {saldo.nama}{' '}
-          <span
-            className={`ml-2 px-2 py-1 text-sm font-semibold rounded-md ${saldo.status === 'Active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}
-          >
-            {saldo.status}
-          </span>
-        </h1>
-        <Button
-          onClick={() => setIsModalOpen(true)}
-          className={`w-28 font-semibold text-white ${saldo.status === 'Active' ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'}`}
-        >
-          {saldo.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
-        </Button>
-      </div>
-
-      <Table className="border-collapse border border-black dark:border-white w-full mb-6">
-        <TableBody>
-          <TableRow className="border border-black dark:border-white">
-            <TableCell className="font-semibold border border-black dark:border-white">
-              User ID
-            </TableCell>
-            <TableCell className="border border-black dark:border-white">{saldo.userId}</TableCell>
-          </TableRow>
-          <TableRow className="border border-black dark:border-white">
-            <TableCell className="font-semibold border border-black dark:border-white">
-              Nama
-            </TableCell>
-            <TableCell className="border border-black dark:border-white">{saldo.nama}</TableCell>
-          </TableRow>
-          <TableRow className="border border-black dark:border-white">
-            <TableCell className="font-semibold border border-black dark:border-white">
-              Saldo
-            </TableCell>
-            <TableCell className="border border-black dark:border-white">
-              Rp {saldo.saldo.toLocaleString()}
-            </TableCell>
-          </TableRow>
-          <TableRow className="border border-black dark:border-white">
-            <TableCell className="font-semibold border border-black dark:border-white">
-              Category
-            </TableCell>
-            <TableCell className="border border-black dark:border-white">
-              {saldo.category}
-            </TableCell>
-          </TableRow>
-        </TableBody>
-      </Table>
-
-      <div className="flex items-center gap-3 mb-3">
-        <span className="font-semibold">Urutkan:</span>
-        <Select value={sortOrder} onValueChange={val => setSortOrder(val as 'asc' | 'desc')}>
-          <SelectTrigger className="w-56 h-10">
-            <SelectValue placeholder="Urutkan Transaksi" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="desc">Terbaru → Terlama</SelectItem>
-            <SelectItem value="asc">Terlama → Terbaru</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
-
-      <h2 className="text-xl font-semibold mb-2">Riwayat Transaksi</h2>
-      <Table className="border-collapse border border-black dark:border-white w-full mb-2">
-        <TableHeader className="bg-gray-100 dark:bg-gray-800">
-          <TableRow>
-            <TableHead className="border border-black dark:border-white">ID Transaksi</TableHead>
-            <TableHead className="border border-black dark:border-white">Jenis</TableHead>
-            <TableHead className="border border-black dark:border-white">Nominal</TableHead>
-            <TableHead className="border border-black dark:border-white">Tanggal</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {paginatedTransaksi.length > 0 ? (
-            paginatedTransaksi.map(t => (
-              <TableRow key={t.id} className="border border-black dark:border-white">
-                <TableCell className="border border-black dark:border-white">{t.id}</TableCell>
-                <TableCell className="border border-black dark:border-white">{t.jenis}</TableCell>
-                <TableCell className="border border-black dark:border-white">
-                  Rp {t.nominal.toLocaleString()}
-                </TableCell>
-                <TableCell className="border border-black dark:border-white">{t.tanggal}</TableCell>
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={4} className="text-center p-4">
-                Tidak ada transaksi
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
-
-      <div className="flex justify-between items-center mt-2">
-        <div>
-          <span>Row per page: </span>
-          <Select
-            value={itemsPerPage.toString()}
-            onValueChange={val => {
-              setItemsPerPage(Number(val))
-              setCurrentPage(1)
-            }}
-          >
-            <SelectTrigger className="w-20 h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {[10, 15, 20, 50, 100].map(n => (
-                <SelectItem key={n} value={n.toString()}>
-                  {n}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="flex gap-1">
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(num => (
-            <Button
-              key={num}
-              className={`w-8 ${currentPage === num ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'}`}
-              onClick={() => setCurrentPage(num)}
-            >
-              {num}
-            </Button>
-          ))}
-        </div>
-      </div>
-
-      <Link to="/saldo">
-        <Button className="mt-6 w-32">Kembali ke List</Button>
-      </Link>
-
-      {/* Modal Konfirmasi */}
-      {isModalOpen && (
-        <div className="fixed inset-0 flex items-center justify-center z-50">
-          <div className="absolute inset-0 backdrop-blur-sm bg-white/30 dark:bg-black/20"></div>
-          <div className="relative bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl w-[400px] z-10">
-            <h2 className="text-xl font-bold mb-3">
-              {saldo.status === 'Active' ? 'Nonaktifkan User' : 'Aktifkan User'}
-            </h2>
-            <p className="mb-6">
-              {saldo.status === 'Active'
-                ? `Apakah Anda yakin ingin menonaktifkan user ${saldo.nama}? User yang dinonaktifkan tidak dapat melakukan transaksi saldo.`
-                : `Apakah Anda yakin ingin mengaktifkan kembali user ${saldo.nama}? User yang aktif dapat kembali melakukan transaksi saldo.`}
-            </p>
-            <div className="flex justify-end gap-3">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
-                Batal
-              </Button>
-              <Button
-                onClick={handleConfirmToggle}
-                className={
-                  saldo.status === 'Active'
-                    ? 'bg-red-600 hover:bg-red-700 text-white'
-                    : 'bg-green-600 hover:bg-green-700 text-white'
-                }
-              >
-                {saldo.status === 'Active' ? 'Nonaktifkan' : 'Aktifkan'}
-              </Button>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  )
-}
-
-/* ---------- Parent Component: SaldoPage ---------- */
-export const SaldoPage: React.FC = () => {
-  const [saldoData, setSaldoData] = useState<Saldo[]>(initialSaldoData)
-
-  const updateStatus = (userId: string, newStatus: 'Active' | 'Inactive') => {
-    setSaldoData(prev => prev.map(s => (s.userId === userId ? { ...s, status: newStatus } : s)))
-  }
-
-  return (
-    <Routes>
-      <Route path="/" element={<ListSaldo saldoData={saldoData} />} />
-      <Route
-        path=":userId"
-        element={<DetailSaldo saldoData={saldoData} updateStatus={updateStatus} />}
-      />
-    </Routes>
   )
 }

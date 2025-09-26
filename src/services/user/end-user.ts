@@ -18,7 +18,7 @@ export const getListUser = async () => {
   const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.get<GetListUser>(`${import.meta.env.VITE_BASE_URL}/api/web/admin`, {
+  const res = await axios.get<GetListUser>(`${import.meta.env.VITE_BASE_URL}/api/web/users`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
