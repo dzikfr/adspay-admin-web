@@ -6,6 +6,7 @@ import { Power, PowerOff, Pencil, DiamondPlus, KeySquare } from 'lucide-react'
 import { ButtonActionDynamic } from '@/components/layout/ButtonActionDynamic'
 import { createAdminFields, updateAdminFields, resetPasswordAdminFields } from './field'
 import { createAdminSchema, updateAdminSchema, resetPasswordAdminSchema } from './schema'
+import { ConfirmModal } from '@/components/layout/ConfirmModal'
 import {
   getListAdmin,
   createAdmin,
@@ -36,6 +37,12 @@ export function ListAdminPage() {
   const [updateModalOpen, setUpdateModalOpen] = useState(false)
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false)
   const [selectedAdmin, setSelectedAdmin] = useState<AdminType | null>(null)
+  const [confirmOpen, setConfirmOpen] = useState(false)
+  const [confirmConfig, setConfirmConfig] = useState<{
+    title: string
+    description: string
+    action: () => Promise<void>
+  } | null>(null)
 
   const fetchUsers = async () => {
     try {
@@ -73,56 +80,77 @@ export function ListAdminPage() {
         data={admins}
         columns={userColumns}
         caption="Daftar Admin"
-        actions={row => (
-          <div className="flex gap-2 justify-end">
-            <ButtonActionDynamic
-              icon={<Pencil className="h-4 w-4" />}
-              tooltip="Edit"
-              variant="default"
-              onClick={() => {
-                setSelectedAdmin(row)
-                setUpdateModalOpen(true)
-              }}
-            />
-            {/* Jika enabled false, tampilkan tombol aktifkan */}
-            {row.enabled === false && (
+        actions={row => {
+          const isSuperAdmin = row.role.includes('SUPERADMIN')
+
+          return (
+            <div className="flex gap-2 justify-end">
+              {/* Edit*/}
               <ButtonActionDynamic
-                icon={<Power className="h-4 w-4" />}
-                tooltip="Aktifkan"
+                icon={<Pencil className="h-4 w-4" />}
+                tooltip="Edit"
                 variant="default"
-                onClick={async () => {
-                  await activateAdmin(row.username)
-                  toast.success(`Admin ${row.username} berhasil diaktifkan`)
-                  await fetchUsers()
+                onClick={() => {
+                  setSelectedAdmin(row)
+                  setUpdateModalOpen(true)
                 }}
               />
-            )}
 
-            {/* Jika enabled true, tampilkan tombol non-aktifkan */}
-            {row.enabled === true && (
+              {/* Aktifkan*/}
+              {row.enabled === false && !isSuperAdmin && (
+                <ButtonActionDynamic
+                  icon={<Power className="h-4 w-4" />}
+                  tooltip="Aktifkan"
+                  variant="default"
+                  onClick={() => {
+                    setConfirmConfig({
+                      title: 'Aktifkan Admin',
+                      description: `Yakin mau aktifkan ${row.username}?`,
+                      action: async () => {
+                        await activateAdmin(row.username)
+                        toast.success(`Admin ${row.username} berhasil diaktifkan`)
+                        await fetchUsers()
+                      },
+                    })
+                    setConfirmOpen(true)
+                  }}
+                />
+              )}
+
+              {/* Non-aktifkan*/}
+              {row.enabled === true && !isSuperAdmin && (
+                <ButtonActionDynamic
+                  icon={<PowerOff className="h-4 w-4" />}
+                  tooltip="Non-aktifkan"
+                  variant="default"
+                  onClick={() => {
+                    setConfirmConfig({
+                      title: 'Non-aktifkan Admin',
+                      description: `Yakin mau non-aktifkan ${row.username}?`,
+                      action: async () => {
+                        await deactivateAdmin(row.username)
+                        toast.success(`Admin ${row.username} berhasil dinon-aktifkan`)
+                        await fetchUsers()
+                      },
+                    })
+                    setConfirmOpen(true)
+                  }}
+                />
+              )}
+
+              {/* Reset Password*/}
               <ButtonActionDynamic
-                icon={<PowerOff className="h-4 w-4" />}
-                tooltip="Non-aktifkan"
+                icon={<KeySquare className="h-4 w-4" />}
+                tooltip="Reset Password"
                 variant="default"
-                onClick={async () => {
-                  await deactivateAdmin(row.username)
-                  toast.success(`Admin ${row.username} berhasil dinon-aktifkan`)
-                  await fetchUsers()
+                onClick={() => {
+                  setSelectedAdmin(row)
+                  setChangePasswordModalOpen(true)
                 }}
               />
-            )}
-
-            <ButtonActionDynamic
-              icon={<KeySquare className="h-4 w-4" />}
-              tooltip="Change Password"
-              variant="default"
-              onClick={() => {
-                setSelectedAdmin(row)
-                setChangePasswordModalOpen(true)
-              }}
-            />
-          </div>
-        )}
+            </div>
+          )
+        }}
       />
 
       {/* Modals Create */}
@@ -182,6 +210,16 @@ export function ListAdminPage() {
           await fetchUsers()
         }}
       />
+
+      {confirmConfig && (
+        <ConfirmModal
+          isOpen={confirmOpen}
+          title={confirmConfig.title}
+          description={confirmConfig.description}
+          onConfirm={confirmConfig.action}
+          onClose={() => setConfirmOpen(false)}
+        />
+      )}
     </>
   )
 }

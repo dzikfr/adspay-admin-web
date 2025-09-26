@@ -2,7 +2,6 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Layout from './layout'
 import { Home } from '@/pages/Home'
 import { About } from '@/pages/About'
-import { DemoPage } from '@/pages/demo/page'
 import { ThemeProvider } from '@/components/layout/ThemeProvider'
 import { Toaster } from '@/components/ui/sonner'
 import { CallbackPage } from '@/pages/Callback'
@@ -30,7 +29,6 @@ function App() {
         <Route element={<Layout />}>
           <Route path="/" element={<Home />} />
           <Route path="/about" element={<About />} />
-          <Route path="/demo" element={<DemoPage />} />
           <Route path="/list-admin" element={<ListAdminPage />} />
           <Route path="/saldo/*" element={<SaldoPage />} />
         </Route>

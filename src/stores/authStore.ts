@@ -4,7 +4,11 @@ import { secureStorage } from '@/utils/secureStorage'
 interface User {
   username: string
   email?: string
-  roles?: string[]
+  roles?: Roles
+}
+
+interface Roles {
+  roles: string[]
 }
 
 interface AuthState {
