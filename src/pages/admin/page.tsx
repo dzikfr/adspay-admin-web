@@ -107,9 +107,15 @@ export function ListAdminPage() {
                       title: 'Aktifkan Admin',
                       description: `Yakin mau aktifkan ${row.username}?`,
                       action: async () => {
-                        await activateAdmin(row.username)
-                        toast.success(`Admin ${row.username} berhasil diaktifkan`)
-                        await fetchUsers()
+                        try {
+                          await activateAdmin(row.username)
+                          toast.success(`Admin ${row.username} berhasil diaktifkan`)
+                        } catch (error) {
+                          console.error(error)
+                          toast.error(`Gagal mengaktifkan admin ${row.username}`)
+                        } finally {
+                          await fetchUsers()
+                        }
                       },
                     })
                     setConfirmOpen(true)
@@ -128,9 +134,15 @@ export function ListAdminPage() {
                       title: 'Non-aktifkan Admin',
                       description: `Yakin mau non-aktifkan ${row.username}?`,
                       action: async () => {
-                        await deactivateAdmin(row.username)
-                        toast.success(`Admin ${row.username} berhasil dinon-aktifkan`)
-                        await fetchUsers()
+                        try {
+                          await deactivateAdmin(row.username)
+                          toast.success(`Admin ${row.username} berhasil dinon-aktifkan`)
+                        } catch (error) {
+                          console.error(error)
+                          toast.error(`Gagal menon-aktifkan admin ${row.username}`)
+                        } finally {
+                          await fetchUsers()
+                        }
                       },
                     })
                     setConfirmOpen(true)
@@ -166,6 +178,7 @@ export function ListAdminPage() {
           toast.success('Admin berhasil ditambahkan')
           await fetchUsers()
         }}
+        failedLabel="Gagal menambahkan admin"
       />
 
       {/* Modals Update */}
@@ -188,6 +201,7 @@ export function ListAdminPage() {
           toast.success(`Admin ${selectedAdmin?.username} berhasil diupdate`)
           await fetchUsers()
         }}
+        failedLabel="Gagal mengupdate admin"
       />
 
       {/* Modals Change Password */}
@@ -209,6 +223,7 @@ export function ListAdminPage() {
           toast.success(`Password Admin ${selectedAdmin?.username} berhasil diubah`)
           await fetchUsers()
         }}
+        failedLabel="Gagal mengubah password admin"
       />
 
       {confirmConfig && (

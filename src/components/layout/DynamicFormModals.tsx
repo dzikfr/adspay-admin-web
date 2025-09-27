@@ -35,6 +35,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { type FieldConfig } from '@/types/field_form'
 import { getDefaultValues } from '@/helpers/form_helpers'
 import { DynamicFormTableField } from './DynamicFormTableField'
+import { toast } from 'sonner'
 
 interface DynamicFormModalProps<T extends z.ZodType<any, any>> {
   schema: T
@@ -46,6 +47,7 @@ interface DynamicFormModalProps<T extends z.ZodType<any, any>> {
   editData?: Partial<z.infer<T>>
   submitLabel?: string
   onSuccess?: () => void
+  failedLabel?: string
 }
 
 export function DynamicFormModal<T extends z.ZodType<any, any>>({
@@ -58,6 +60,7 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
   editData,
   submitLabel,
   onSuccess,
+  failedLabel,
 }: DynamicFormModalProps<T>) {
   const [visiblePasswords, setVisiblePasswords] = useState<Record<string, boolean>>({})
 
@@ -82,10 +85,15 @@ export function DynamicFormModal<T extends z.ZodType<any, any>>({
   }, [editData, isOpen])
 
   const handleSubmit = async (data: z.infer<T>) => {
-    await onSubmit(data)
-    form.reset(getDefaultValues<T>(fields) as any)
-    onClose()
-    if (onSuccess) onSuccess()
+    try {
+      await onSubmit(data)
+      form.reset(getDefaultValues<T>(fields) as any)
+      onClose()
+      if (onSuccess) onSuccess()
+    } catch (err) {
+      toast.error(`${failedLabel ? failedLabel : 'Gagal melakukan aksi'}`)
+      console.error('Form submit error:', err)
+    }
   }
 
   return (

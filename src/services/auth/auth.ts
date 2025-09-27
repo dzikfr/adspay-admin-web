@@ -16,44 +16,59 @@ interface LoginResponse {
 }
 
 export const exchangeAuthCode = async (code: string, redirectUri: string) => {
-  const res = await axios.post<LoginResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/auth/login`,
-    { authCode: code, redirectUri },
-    { headers: { 'Content-Type': 'application/json' } }
-  )
+  try {
+    const res = await axios.post<LoginResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/auth/login`,
+      { authCode: code, redirectUri },
+      { headers: { 'Content-Type': 'application/json' } }
+    )
 
-  const { access_token, refresh_token, expires_in } = res.data.data
-  const expiresAt = Date.now() + expires_in * 1000
+    const { access_token, refresh_token, expires_in } = res.data.data
+    const expiresAt = Date.now() + expires_in * 1000
 
-  useAuthStore.getState().setAuth(null, access_token, refresh_token, expiresAt)
+    useAuthStore.getState().setAuth(null, access_token, refresh_token, expiresAt)
 
-  return res.data
+    return res.data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
 
 export const refreshToken = async () => {
-  const { refreshToken: currentRefresh, user } = useAuthStore.getState()
-  if (!currentRefresh) throw new Error('No refresh token')
+  try {
+    const { refreshToken: currentRefresh, user } = useAuthStore.getState()
+    if (!currentRefresh) throw new Error('No refresh token')
 
-  const res = await axios.post<LoginResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/auth/refresh?refreshToken=${currentRefresh}`,
-    { headers: { 'Content-Type': 'application/json' } }
-  )
+    const res = await axios.post<LoginResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/auth/refresh?refreshToken=${currentRefresh}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    )
 
-  const { access_token, refresh_token, expires_in } = res.data.data
-  const expiresAt = Date.now() + expires_in * 1000
+    const { access_token, refresh_token, expires_in } = res.data.data
+    const expiresAt = Date.now() + expires_in * 1000
 
-  useAuthStore.getState().setAuth(user, access_token, refresh_token, expiresAt)
+    useAuthStore.getState().setAuth(user, access_token, refresh_token, expiresAt)
 
-  return access_token
+    return access_token
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
 
 export const logout = async () => {
-  const { refreshToken } = useAuthStore.getState()
-  if (!refreshToken) throw new Error('No refresh token')
-  await axios.post(
-    `${import.meta.env.VITE_BASE_URL}/api/web/auth/logout?refreshToken=${refreshToken}`,
-    { headers: { 'Content-Type': 'application/json' } }
-  )
-
-  useAuthStore.getState().clearAuth()
+  try {
+    const { refreshToken } = useAuthStore.getState()
+    if (!refreshToken) throw new Error('No refresh token')
+    await axios.post(
+      `${import.meta.env.VITE_BASE_URL}/api/web/auth/logout?refreshToken=${refreshToken}`,
+      { headers: { 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    console.error(error)
+    throw error
+  } finally {
+    useAuthStore.getState().clearAuth()
+  }
 }

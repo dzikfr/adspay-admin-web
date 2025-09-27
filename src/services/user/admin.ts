@@ -36,133 +36,173 @@ interface GlobalResponse {
 }
 
 export const getProfile = async (): Promise<any> => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.get<GetProfile>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/profile`,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.get<GetProfile>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin/profile`,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { data } = res.data
-  return data
+    const { data } = res.data
+    return data
+  } catch (error) {
+    console.error(error)
+    console.error(error)
+    throw error
+  }
 }
 
 export const getListAdmin = async () => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.get<GetListAdmin>(`${import.meta.env.VITE_BASE_URL}/api/web/admin`, {
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${accessToken}`,
-    },
-  })
+    const res = await axios.get<GetListAdmin>(`${import.meta.env.VITE_BASE_URL}/api/web/admin`, {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    })
 
-  const { data } = res.data
-  return data
+    const { data } = res.data
+    return data
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
 
 export const createAdmin = async (username: string, email: string, password: string) => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin`,
-    { username, email, password },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.post<GlobalResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin`,
+      { username, email, password },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { resp_message } = res.data
+    const { resp_message } = res.data
 
-  return resp_message
+    return resp_message
+  } catch (error) {
+    console.error(error)
+    console.error(error)
+    throw error
+  }
 }
 
 export const updateAdmin = async (username: string, email: string) => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.put<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}`,
-    { email },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.put<GlobalResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}`,
+      { email },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { resp_message } = res.data
+    const { resp_message } = res.data
 
-  return resp_message
+    return resp_message
+  } catch (error) {
+    console.error(error)
+    throw error
+  }
 }
 
 export const activateAdmin = async (username: string) => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/activate`,
-    null,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.post<GlobalResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/activate`,
+      null,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { resp_message } = res.data
+    const { resp_message } = res.data
 
-  return resp_message
+    return resp_message
+  } catch (error) {
+    console.error(error)
+    console.error(error)
+    throw error
+  }
 }
 
 export const deactivateAdmin = async (username: string) => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/deactivate`,
-    null,
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.post<GlobalResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/deactivate`,
+      null,
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { resp_message } = res.data
-  return resp_message
+    const { resp_message } = res.data
+    return resp_message
+  } catch (error) {
+    console.error(error)
+    console.error(error)
+    throw error
+  }
 }
 
 export const resetPasswordAdmin = async (username: string, newPassword: string) => {
-  const { accessToken } = useAuthStore.getState()
-  if (!accessToken) throw new Error('No refresh token')
+  try {
+    const { accessToken } = useAuthStore.getState()
+    if (!accessToken) throw new Error('No refresh token')
 
-  const res = await axios.post<GlobalResponse>(
-    `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/reset-password`,
-    { newPassword },
-    {
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
-      },
-    }
-  )
+    const res = await axios.post<GlobalResponse>(
+      `${import.meta.env.VITE_BASE_URL}/api/web/admin/${username}/reset-password`,
+      { newPassword },
+      {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    )
 
-  const { resp_message } = res.data
+    const { resp_message } = res.data
 
-  return resp_message
+    return resp_message
+  } catch (error) {
+    console.error(error)
+    console.error(error)
+    throw error
+  }
 }
