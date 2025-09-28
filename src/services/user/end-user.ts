@@ -17,7 +17,7 @@ export interface ListUserResponse {
   data: ListUserItem[]
 }
 
-export interface DetailUser {
+export interface KycProfile {
   id: number
   fullName: string
   nik: string
@@ -38,19 +38,22 @@ export interface DetailUser {
   updatedAt: string
 }
 
+export interface DetailUser {
+  id: number
+  keycloakUserId: string
+  phoneNumber: string
+  saldo: number
+  status: string
+  registrationStatus: string
+  createdAt: string
+  updatedAt: string
+  kycProfiles: KycProfile[]
+}
+
 export interface DetailUserResponse {
   resp_code: string
   resp_message: string
-  data: {
-    id: number
-    phoneNumber: string
-    status: string
-    registrationStatus: string
-    saldo: number
-    createdAt: string
-    updatedAt: string
-    kycProfiles: DetailUser[]
-  }
+  data: DetailUser
 }
 
 // ==================== API FUNCTIONS ====================
@@ -68,7 +71,7 @@ export const getListUser = async (): Promise<ListUserItem[]> => {
   return res.data.data
 }
 
-export const getDetailUser = async (id: number): Promise<DetailUser | null> => {
+export const getDetailUser = async (id: number): Promise<DetailUser> => {
   const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No access token')
 
@@ -82,6 +85,5 @@ export const getDetailUser = async (id: number): Promise<DetailUser | null> => {
     }
   )
 
-  // ambil hanya profile pertama (kalau ada)
-  return res.data.data.kycProfiles?.[0] || null
+  return res.data.data
 }
