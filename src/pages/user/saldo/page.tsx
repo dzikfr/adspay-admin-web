@@ -41,6 +41,8 @@ const SaldoList: React.FC = () => {
   }, [])
 
   const statusColor = (status: string) => (status === 'ACTIVE' ? 'text-green-600' : 'text-red-600')
+  const displayStatus = (status: string) =>
+    status === 'ACTIVE' ? 'Active' : status === 'INACTIVE' ? 'Inactive' : status
 
   if (loading) return <div className="p-4">Loading...</div>
   if (error) return <div className="p-4 text-red-500">{error}</div>
@@ -69,7 +71,7 @@ const SaldoList: React.FC = () => {
               <td className="p-2 border dark:border-gray-700 text-blue-600">{user.id}</td>
               <td className="p-2 border dark:border-gray-700">{user.phoneNumber}</td>
               <td className={`p-2 border dark:border-gray-700 ${statusColor(user.status)}`}>
-                {user.status}
+                {displayStatus(user.status)}
               </td>
               <td className="p-2 border dark:border-gray-700">{user.registrationStatus}</td>
               <td className="p-2 border dark:border-gray-700">{user.saldo}</td>
@@ -97,9 +99,7 @@ const SaldoDetail: React.FC = () => {
       if (!id) return
       setLoading(true)
       try {
-        // Ambil data dari API, bisa array atau object
         const result = await getDetailUser(Number(id))
-        // Pastikan kita ambil data array kalau API mengembalikan array
         const userData = Array.isArray(result) ? result[0] : result
         setDetailUser(userData)
         if (userData) setNewStatus(userData.status as 'ACTIVE' | 'INACTIVE')
@@ -117,6 +117,8 @@ const SaldoDetail: React.FC = () => {
   const statusColor = (status: string) => (status === 'ACTIVE' ? 'text-green-600' : 'text-red-600')
   const buttonColor = (status: string) =>
     status === 'ACTIVE' ? 'bg-green-600 hover:bg-green-700' : 'bg-red-600 hover:bg-red-700'
+  const displayStatus = (status: string) =>
+    status === 'ACTIVE' ? 'Active' : status === 'INACTIVE' ? 'Inactive' : status
 
   const handleChangeStatus = () => setShowModal(true)
   const confirmStatusChange = () => {
@@ -129,7 +131,17 @@ const SaldoDetail: React.FC = () => {
   if (!detailUser) return null
 
   return (
-    <div className="p-4 min-h-screen dark:bg-gray-900 dark:text-gray-100">
+    <div className="p-4 min-h-screen dark:bg-gray-900 dark:text-gray-100 relative">
+      {/* Button status pojok kanan atas */}
+      <div className="absolute top-4 right-4">
+        <button
+          className={`px-3 py-1 text-white rounded ${buttonColor(detailUser.status)}`}
+          onClick={handleChangeStatus}
+        >
+          {displayStatus(detailUser.status)}
+        </button>
+      </div>
+
       <button
         className="mb-4 px-3 py-1 bg-gray-300 dark:bg-gray-600 rounded hover:bg-gray-400 dark:hover:bg-gray-500"
         onClick={() => navigate('/saldo')}
@@ -138,28 +150,22 @@ const SaldoDetail: React.FC = () => {
       </button>
 
       <h1 className="text-xl font-bold mb-4">
-        Detail User <span className={statusColor(detailUser.status)}>({detailUser.status})</span>
+        Detail User{' '}
+        <span className={statusColor(detailUser.status)}>({displayStatus(detailUser.status)})</span>
       </h1>
-
-      <button
-        className={`mb-4 px-3 py-1 text-white rounded ${buttonColor(detailUser.status)}`}
-        onClick={handleChangeStatus}
-      >
-        {detailUser.status}
-      </button>
 
       {/* Informasi user */}
       <table className="table-auto w-full border mb-4 dark:border-gray-700">
         <tbody>
           {[
-            ['ID', detailUser.id],
-            ['Keycloak ID', detailUser.keycloakUserId],
+            ['Id', detailUser.id],
+            ['Keycloak id', detailUser.keycloakUserId],
             ['Phone', detailUser.phoneNumber],
             ['Saldo', detailUser.saldo],
-            ['Status', detailUser.status],
+            ['Status', displayStatus(detailUser.status)],
             ['Registration', detailUser.registrationStatus],
-            ['Created At', detailUser.createdAt],
-            ['Updated At', detailUser.updatedAt],
+            ['Created at', detailUser.createdAt],
+            ['Updated at', detailUser.updatedAt],
           ].map(([label, value]) => (
             <tr key={label}>
               <td className="p-2 border font-medium dark:border-gray-700">{label}</td>
@@ -220,7 +226,10 @@ const SaldoDetail: React.FC = () => {
             <h3 className="text-lg font-semibold mb-4 dark:text-gray-100">Konfirmasi Status</h3>
             <p className="mb-4 dark:text-gray-200">
               Ubah status user menjadi{' '}
-              <strong>{detailUser.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE'}</strong>?
+              <strong>
+                {displayStatus(detailUser.status === 'ACTIVE' ? 'INACTIVE' : 'ACTIVE')}
+              </strong>
+              ?
             </p>
             <div className="flex justify-end gap-4">
               <button
