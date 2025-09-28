@@ -1,12 +1,13 @@
 import { DynamicFormModal } from '@/components/layout/DynamicFormModals'
 import { DynamicTable } from '@/components/layout/DynamicalTable'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { type ColumnConfig } from '@/types/table'
 import { Power, PowerOff, Pencil, DiamondPlus, KeySquare } from 'lucide-react'
 import { ButtonActionDynamic } from '@/components/layout/ButtonActionDynamic'
 import { createAdminFields, updateAdminFields, resetPasswordAdminFields } from './field'
 import { createAdminSchema, updateAdminSchema, resetPasswordAdminSchema } from './schema'
 import { ConfirmModal } from '@/components/layout/ConfirmModal'
+import { TableControls } from '@/components/layout/TableControls'
 import {
   getListAdmin,
   createAdmin,
@@ -33,6 +34,8 @@ export type AdminType = {
 
 export function ListAdminPage() {
   const [admins, setAdmins] = useState<AdminType[]>([])
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('__ALL__')
   const [createModalOpen, setCreateModalOpen] = useState(false)
   const [updateModalOpen, setUpdateModalOpen] = useState(false)
   const [changePasswordModalOpen, setChangePasswordModalOpen] = useState(false)
@@ -66,6 +69,23 @@ export function ListAdminPage() {
     fetchUsers()
   }, [])
 
+  const filteredAdmins = useMemo(() => {
+    return admins
+      .filter(a => status === '__ALL__' || String(a.enabled) === status)
+      .filter(a => {
+        const q = search.toLowerCase()
+        return a.username.toLowerCase().includes(q) || a.email.toLowerCase().includes(q)
+      })
+  }, [admins, search, status])
+
+  const statusOptions = useMemo(() => {
+    const uniques = new Set(admins.map(a => String(a.enabled)))
+    return [...uniques].map(v => ({
+      value: v,
+      label: v === 'true' ? 'Aktif' : v === 'false' ? 'Non-aktif' : v,
+    }))
+  }, [admins])
+
   return (
     <>
       <ButtonActionDynamic
@@ -75,9 +95,18 @@ export function ListAdminPage() {
         onClick={() => setCreateModalOpen(true)}
       />
 
+      <TableControls
+        label="Status"
+        search={search}
+        onSearchChange={setSearch}
+        filterValue={status}
+        onFilterChange={setStatus}
+        options={statusOptions}
+      />
+
       {/* Table */}
       <DynamicTable
-        data={admins}
+        data={filteredAdmins}
         columns={userColumns}
         caption="Daftar Admin"
         actions={row => {
