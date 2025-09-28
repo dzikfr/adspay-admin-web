@@ -17,6 +17,12 @@ export interface ListUserResponse {
   data: ListUserItem[]
 }
 
+export interface Transaction {
+  type: string
+  amount: number
+  date: string
+}
+
 export interface KycProfile {
   id: number
   fullName: string
@@ -48,6 +54,7 @@ export interface DetailUser {
   createdAt: string
   updatedAt: string
   kycProfiles: KycProfile[]
+  transactions?: Transaction[]
 }
 
 export interface DetailUserResponse {
@@ -60,21 +67,18 @@ export interface DetailUserResponse {
 export const getListUser = async (): Promise<ListUserItem[]> => {
   const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No access token')
-
   const res = await axios.get<ListUserResponse>(`${import.meta.env.VITE_BASE_URL}/api/web/users`, {
     headers: {
       'Content-Type': 'application/json',
       Authorization: `Bearer ${accessToken}`,
     },
   })
-
   return res.data.data
 }
 
 export const getDetailUser = async (id: number): Promise<DetailUser> => {
   const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No access token')
-
   const res = await axios.get<DetailUserResponse>(
     `${import.meta.env.VITE_BASE_URL}/api/web/users/${id}`,
     {
@@ -84,6 +88,38 @@ export const getDetailUser = async (id: number): Promise<DetailUser> => {
       },
     }
   )
-
   return res.data.data
+}
+
+// ==================== UPDATE USER STATUS ====================
+export const activateUser = async (id: number) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No access token')
+  const res = await axios.post(
+    `${import.meta.env.VITE_BASE_URL}/api/web/users/${id}/activate`,
+    null,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  )
+  return res.data
+}
+
+export const deactivateUser = async (id: number) => {
+  const { accessToken } = useAuthStore.getState()
+  if (!accessToken) throw new Error('No access token')
+  const res = await axios.post(
+    `${import.meta.env.VITE_BASE_URL}/api/web/users/${id}/suspend`,
+    null,
+    {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+      },
+    }
+  )
+  return res.data
 }
