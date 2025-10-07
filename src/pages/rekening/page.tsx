@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 
 // contoh dummy data transaksi khusus biaya admin AdsPay
-const transaksi = [
+const transaksiData = [
   {
     id: 1,
     tanggal: '2025-10-01 09:15',
@@ -76,6 +76,10 @@ export const RekeningPage: React.FC = () => {
   // contoh saldo, nanti bisa diganti dari API
   const saldo = 2250000
 
+  // state transaksi
+  const [transaksi, setTransaksi] = useState(transaksiData)
+  const [loading, setLoading] = useState(false)
+
   // state untuk pagination
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
@@ -92,6 +96,18 @@ export const RekeningPage: React.FC = () => {
     setCurrentPage(1) // reset ke halaman pertama
   }
 
+  // fungsi refresh transaksi (simulasi ambil ulang data dari API)
+  const handleRefresh = () => {
+    setLoading(true)
+    // simulasi delay ambil data
+    setTimeout(() => {
+      // bisa diganti fetch ke API di sini
+      setTransaksi([...transaksiData])
+      setCurrentPage(1)
+      setLoading(false)
+    }, 1500)
+  }
+
   return (
     <div className="p-6 space-y-6">
       {/* SALDO */}
@@ -106,9 +122,49 @@ export const RekeningPage: React.FC = () => {
 
       {/* HISTORI TRANSAKSI */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-gray-100">
-          Histori Biaya Admin Transaksi AdsPay
-        </h2>
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+            Histori Biaya Admin Transaksi AdsPay
+          </h2>
+
+          {/* Tombol Refresh */}
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+            } text-white`}
+          >
+            {loading ? (
+              <>
+                <svg
+                  className="animate-spin h-4 w-4 text-white"
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                >
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  ></circle>
+                  <path
+                    className="opacity-75"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                  ></path>
+                </svg>
+                <span>Refreshing...</span>
+              </>
+            ) : (
+              <>🔄 Refresh</>
+            )}
+          </button>
+        </div>
+
         <div className="overflow-x-auto">
           <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
             <thead className="bg-gray-100 dark:bg-gray-800">
