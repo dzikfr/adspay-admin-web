@@ -87,7 +87,7 @@ export function ListAdminPage() {
   }, [admins])
 
   return (
-    <>
+    <div className="dark:bg-gray-900 dark:text-gray-100 p-5">
       <ButtonActionDynamic
         icon={<DiamondPlus className="h-4 w-4" />}
         tooltip="Tambahkan Admin"
@@ -264,6 +264,6 @@ export function ListAdminPage() {
           onClose={() => setConfirmOpen(false)}
         />
       )}
-    </>
+    </div>
   )
 }

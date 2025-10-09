@@ -16,6 +16,13 @@ export const createAdminFields: FieldConfig[] = [
     placeholder: 'Masukkan password',
     required: true,
   },
+  {
+    name: 'confirmPassword',
+    label: 'Cosnfirm Password',
+    type: 'password',
+    placeholder: 'Konfirmasi password',
+    required: true,
+  },
 ]
 
 export const updateAdminFields: FieldConfig[] = [
