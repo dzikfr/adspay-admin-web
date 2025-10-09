@@ -1,4 +1,4 @@
-import { Home, Inbox, ChevronRight, User, UserCog } from 'lucide-react'
+import { Home, Inbox, ChevronRight, User, UserCog, Wallet } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -42,6 +42,11 @@ const items: MenuItemType[] = [
       { title: 'Master Bank', url: '/master-bank' },
       { title: 'Master Document', url: '/master-document' },
     ],
+  },
+  {
+    title: 'Rekening',
+    icon: Wallet,
+    children: [{ title: 'Rekening Operasional', url: '/rekening' }],
   },
 ]
 

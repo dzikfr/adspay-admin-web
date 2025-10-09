@@ -53,7 +53,14 @@ const SaldoList: React.FC = () => {
   const displayStatus = (status: string) => (status === 'ACTIVE' ? 'ACTIVE' : 'SUSPEND')
 
   const filteredData = saldoData.filter(user => {
-    const matchSearch = searchId ? user.id.toString().includes(searchId) : true
+    const query = searchId.toLowerCase()
+    const matchSearch = query
+      ? user.id.toString().includes(query) ||
+        user.phoneNumber?.toLowerCase().includes(query) ||
+        user.status?.toLowerCase().includes(query) ||
+        user.registrationStatus?.toLowerCase().includes(query) ||
+        user.createdAt?.toLowerCase().includes(query)
+      : true
     const matchStatus = statusFilter === 'ALL' ? true : user.status === statusFilter
     const matchReg =
       regFilter === 'ALL'
@@ -89,7 +96,7 @@ const SaldoList: React.FC = () => {
       <div className="flex flex-wrap gap-4 mb-4 items-center">
         <input
           type="text"
-          placeholder="Search by ID"
+          placeholder="Search by ID, Phone, Status, Registration, Created At"
           value={searchId}
           onChange={e => setSearchId(e.target.value)}
           className="px-3 py-1 border rounded dark:bg-gray-700 dark:border-gray-600"
@@ -127,12 +134,13 @@ const SaldoList: React.FC = () => {
         </thead>
         <tbody>
           {paginatedData.map(user => (
-            <tr
-              key={user.id}
-              className="hover:bg-gray-50 dark:hover:bg-gray-800 cursor-pointer"
-              onClick={() => navigate(`/saldo/${user.id}`)}
-            >
-              <td className="p-2 border dark:border-gray-700 text-blue-600">{user.id}</td>
+            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+              <td
+                className="p-2 border dark:border-gray-700 text-blue-600 cursor-pointer"
+                onClick={() => navigate(`/saldo/${user.id}`)}
+              >
+                {user.id}
+              </td>
               <td className="p-2 border dark:border-gray-700">{user.phoneNumber}</td>
               <td className={`p-2 border dark:border-gray-700 ${statusColor(user.status)}`}>
                 {displayStatus(user.status)}
@@ -439,7 +447,7 @@ const SaldoDetail: React.FC = () => {
         </div>
       )}
 
-      {/* Popup Success */}
+      {/* Success popup */}
       {showSuccess && (
         <div className="fixed top-4 right-4 bg-green-600 text-white px-4 py-2 rounded shadow-lg z-50">
           Status berhasil diubah menjadi {newStatus}
