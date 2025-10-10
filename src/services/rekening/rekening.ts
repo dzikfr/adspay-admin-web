@@ -18,10 +18,15 @@ export interface BalanceResponse {
 }
 
 export interface TransactionItem {
-  id?: number
-  tanggal?: string
-  keterangan?: string
-  jumlah?: number
+  id: string
+  extRef: string
+  postedAt: string
+  direction: string
+  type: string
+  amount: number
+  status: string
+  balanceAfter: number
+  narration: string
 }
 
 export interface TransactionHistoryData {
@@ -78,7 +83,7 @@ export const getTransactionHistory = async (): Promise<TransactionItem[]> => {
       { headers: getAuthHeaders() }
     )
 
-    // Pastikan items array selalu ada
+    // Return data asli (items) langsung
     return res.data.data?.items || []
   } catch (error) {
     console.error('Error fetching transaction history:', error)

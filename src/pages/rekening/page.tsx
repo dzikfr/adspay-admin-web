@@ -83,7 +83,7 @@ export const RekeningPage: React.FC = () => {
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Histori Transaksi Biaya Admin AdsPay
+            Histori Transaksi Rekening
           </h2>
 
           <button
@@ -139,7 +139,10 @@ export const RekeningPage: React.FC = () => {
                     Keterangan
                   </th>
                   <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-900 dark:text-gray-100">
-                    Biaya Admin
+                    Jumlah
+                  </th>
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-900 dark:text-gray-100">
+                    Status
                   </th>
                 </tr>
               </thead>
@@ -150,13 +153,22 @@ export const RekeningPage: React.FC = () => {
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
                     <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
-                      {tx.tanggal || '-'}
+                      {new Date(tx.postedAt).toLocaleString('id-ID')}
                     </td>
                     <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
-                      {tx.keterangan || '-'}
+                      {tx.narration || '-'}
                     </td>
-                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right font-medium text-red-600 dark:text-red-400">
-                      Rp {Math.abs(tx.jumlah || 0).toLocaleString('id-ID')}
+                    <td
+                      className={`px-4 py-2 border border-gray-200 dark:border-gray-700 text-right font-medium ${
+                        tx.direction === 'IN'
+                          ? 'text-green-600 dark:text-green-400'
+                          : 'text-red-600 dark:text-red-400'
+                      }`}
+                    >
+                      {tx.direction === 'IN' ? '+' : '-'} Rp {tx.amount.toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-700 dark:text-gray-300">
+                      {tx.status}
                     </td>
                   </tr>
                 ))}
