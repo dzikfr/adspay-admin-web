@@ -46,7 +46,10 @@ const items: MenuItemType[] = [
   {
     title: 'Rekening',
     icon: Wallet,
-    children: [{ title: 'Rekening Operasional', url: '/rekening' }],
+    children: [
+      { title: 'Rekening Operasional', url: '/rekening' },
+      { title: 'Rekening Escrow', url: '/rekening/escrow' }, // ✅ submenu baru
+    ],
   },
 ]
 
