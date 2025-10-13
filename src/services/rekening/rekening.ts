@@ -18,7 +18,6 @@ export interface BalanceResponse {
 }
 
 export interface TransactionItem {
-  id: string
   extRef: string
   postedAt: string
   direction: string
@@ -44,7 +43,6 @@ export interface TransactionHistoryResponse {
 
 const BASE_URL = import.meta.env.VITE_BASE_URL
 
-// Helper untuk ambil header dengan token
 const getAuthHeaders = () => {
   const { accessToken } = useAuthStore.getState()
   if (!accessToken) throw new Error('No access token found')
@@ -56,10 +54,6 @@ const getAuthHeaders = () => {
 
 // ==================== API FUNCTIONS ====================
 
-/**
- * Ambil saldo rekening operasional
- * Endpoint: GET /api/web/bank/operational/balance
- */
 export const getBalance = async (): Promise<BalanceData> => {
   try {
     const res = await axios.get<BalanceResponse>(`${BASE_URL}/api/web/bank/operational/balance`, {
@@ -72,18 +66,12 @@ export const getBalance = async (): Promise<BalanceData> => {
   }
 }
 
-/**
- * Ambil histori transaksi rekening operasional
- * Endpoint: GET /api/web/bank/operational/transactions
- */
 export const getTransactionHistory = async (): Promise<TransactionItem[]> => {
   try {
     const res = await axios.get<TransactionHistoryResponse>(
       `${BASE_URL}/api/web/bank/operational/transactions`,
       { headers: getAuthHeaders() }
     )
-
-    // Return data asli (items) langsung
     return res.data.data?.items || []
   } catch (error) {
     console.error('Error fetching transaction history:', error)

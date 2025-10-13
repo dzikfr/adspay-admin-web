@@ -26,7 +26,8 @@ export interface EscrowTransactionItem {
   narration: string
 }
 
-// Helper header (pakai token dari store jika ada)
+// ==================== HELPER HEADERS ====================
+
 const getAuthHeaders = () => {
   try {
     const { accessToken } = useAuthStore.getState()
@@ -37,8 +38,7 @@ const getAuthHeaders = () => {
 }
 
 /**
- * Try beberapa endpoint candidate (fallback) dan return response.data.data jika resp_code === '00'.
- * Kalau semua gagal, throw error.
+ * Try several fallback endpoints and return data if resp_code === '00'
  */
 async function tryGet<T>(candidates: string[]): Promise<T> {
   const headers = {
@@ -49,81 +49,66 @@ async function tryGet<T>(candidates: string[]): Promise<T> {
   for (const url of candidates) {
     try {
       const res = await axios.get(url, { headers })
-      // Jika backend memberikan format standar { resp_code, resp_message, data }
       if (res?.data?.resp_code === '00') {
         return res.data.data as T
       }
 
-      // Jika resp_code 99 dan menyatakan "No static resource ..." -> coba endpoint lain
       if (
         res?.data?.resp_code === '99' &&
         typeof res.data.data === 'string' &&
         /No static resource/i.test(res.data.data)
       ) {
-        console.warn(`Endpoint not found, trying next candidate: ${url} -> ${res.data.data}`)
+        console.warn(`Endpoint not found, trying next: ${url}`)
         continue
       }
 
-      // Jika endpoint merespon tapi bukan 00 (mis. auth) -> lempar agar caller tahu
       throw new Error(res?.data?.resp_message || `Unexpected response from ${url}`)
     } catch (err: any) {
-      // Jika error response (401, 403, 404, dll) dan bukan "not found static resource", handle:
       if (axios.isAxiosError(err)) {
-        const axiosErr = err as AxiosError
-        const status = axiosErr.response?.status
-        const respData = axiosErr.response?.data
+        const status = err.response?.status
+        const respData = err.response?.data
 
-        // Jika 404 atau message menyatakan resource tidak ada -> coba next candidate
         if (
           status === 404 ||
-          (respData && typeof respData === 'string' && /No static resource/i.test(String(respData)))
+          (typeof respData === 'string' && /No static resource/i.test(respData))
         ) {
-          console.warn(`Candidate ${url} returned 404 / no static resource — trying next`)
+          console.warn(`Candidate ${url} returned 404, trying next`)
           continue
         }
 
-        // Jika backend mengembalikan body dengan resp_code === '99' dan pesan No static -> coba next
         if (
           respData &&
           typeof respData === 'object' &&
           (respData as any).resp_code === '99' &&
           /No static resource/i.test(String((respData as any).data))
         ) {
-          console.warn(`Candidate ${url} returned resp_code 99 no static resource — trying next`)
+          console.warn(`Candidate ${url} returned resp_code 99, trying next`)
           continue
         }
 
-        // Untuk kasus 401/403/other -> bubble up agar caller (UI) bisa menampilkan pesan (mis. token expired)
         throw err
       }
 
-      // Non-axios error -> lanjut mencoba endpoint lain (untuk network glitch) atau bubble up jika last candidate
       console.warn(`Error calling ${url}:`, err)
       continue
     }
   }
 
-  throw new Error('Resource not available on configured endpoints (tried multiple candidates).')
+  throw new Error('No valid endpoint found for escrow resource.')
 }
 
-// ==================== EXPORT FUNCTIONS ====================
+// ==================== API FUNCTIONS ====================
 
-/**
- * Ambil saldo escrow — mencoba beberapa path yang mungkin tersedia di backend.
- */
 export async function getEscrowBalance(): Promise<EscrowBalanceData> {
   const candidates = [
-    `${BASE_URL}/api/web/bank/escrow/balance`, // try this first (common)
-    `${BASE_URL}/api/web/escrow/balance`, // alternative
-    `${BASE_URL}/api/escrow/balance`, // another alt (if backend uses different prefix)
+    `${BASE_URL}/api/web/bank/escrow/balance`,
+    `${BASE_URL}/api/web/escrow/balance`,
+    `${BASE_URL}/api/escrow/balance`,
   ]
 
   return tryGet<EscrowBalanceData>(candidates)
 }
 
-/**
- * Ambil histori transaksi escrow — mencoba beberapa path fallback.
- */
 export async function getEscrowTransactions(): Promise<EscrowTransactionItem[]> {
   const candidates = [
     `${BASE_URL}/api/web/bank/escrow/transactions`,
@@ -131,7 +116,6 @@ export async function getEscrowTransactions(): Promise<EscrowTransactionItem[]> 
     `${BASE_URL}/api/escrow/transactions`,
   ]
 
-  // API biasanya membungkus items di data.items
   const data = await tryGet<{ items: EscrowTransactionItem[] }>(candidates)
   return data?.items || []
 }

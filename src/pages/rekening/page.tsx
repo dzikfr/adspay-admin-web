@@ -4,10 +4,9 @@ import React, { useEffect, useState } from 'react'
 import { getBalance, getTransactionHistory } from '@/services/rekening/rekening'
 import type { BalanceData, TransactionItem } from '@/services/rekening/rekening'
 
-// ==================== KOMPONEN UTAMA ====================
 export const RekeningPage: React.FC = () => {
   const [saldo, setSaldo] = useState<BalanceData | null>(null)
-  const [transaksi, setTransaksi] = useState<TransactionItem[]>([])
+  const [transactions, setTransactions] = useState<TransactionItem[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -16,24 +15,24 @@ export const RekeningPage: React.FC = () => {
 
   const indexOfLastRow = currentPage * rowsPerPage
   const indexOfFirstRow = indexOfLastRow - rowsPerPage
-  const currentRows = transaksi.slice(indexOfFirstRow, indexOfLastRow)
-  const totalPages = Math.ceil(transaksi.length / rowsPerPage)
+  const currentRows = transactions.slice(indexOfFirstRow, indexOfLastRow)
+  const totalPages = Math.ceil(transactions.length / rowsPerPage)
 
   const fetchData = async () => {
     try {
       setLoading(true)
       setError(null)
 
-      const [balanceData, transaksiData] = await Promise.all([
+      const [balanceData, transactionData] = await Promise.all([
         getBalance(),
         getTransactionHistory(),
       ])
 
       setSaldo(balanceData)
-      setTransaksi(transaksiData)
+      setTransactions(transactionData)
     } catch (err: any) {
       console.error('Error fetching rekening data:', err)
-      setError('Gagal memuat data rekening. Silakan coba lagi.')
+      setError('Failed to load account data. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -52,16 +51,16 @@ export const RekeningPage: React.FC = () => {
 
   return (
     <div className="p-6 space-y-6">
-      {/* =============== SALDO =============== */}
+      {/* ================= BALANCE ================= */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
-          Saldo Rekening Operasional
+          Operational Account Balance
         </h1>
 
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
         ) : loading && !saldo ? (
-          <p className="text-gray-500">Memuat saldo...</p>
+          <p className="text-gray-500">Loading balance...</p>
         ) : saldo ? (
           <>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
@@ -71,19 +70,19 @@ export const RekeningPage: React.FC = () => {
               {saldo.accountHolderName} • {saldo.accountNo}
             </p>
             <p className="text-xs text-gray-400">
-              Update terakhir: {new Date(saldo.asOf).toLocaleString('id-ID')}
+              Last updated: {new Date(saldo.asOf).toLocaleString('id-ID')}
             </p>
           </>
         ) : (
-          <p className="text-gray-500">Tidak ada data saldo</p>
+          <p className="text-gray-500">No balance data available</p>
         )}
       </div>
 
-      {/* =============== HISTORI TRANSAKSI =============== */}
+      {/* ================= TRANSACTION HISTORY ================= */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Histori Transaksi Rekening
+            Transaction History
           </h2>
 
           <button
@@ -125,24 +124,32 @@ export const RekeningPage: React.FC = () => {
 
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
-        ) : transaksi.length === 0 && !loading ? (
-          <p className="text-gray-500">Belum ada histori transaksi.</p>
+        ) : transactions.length === 0 && !loading ? (
+          <p className="text-gray-500">No transaction history available.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
               <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
-                    Tanggal & Jam
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                    Posted At
                   </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-900 dark:text-gray-100">
-                    Keterangan
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">Ext Ref</th>
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                    Direction
                   </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-900 dark:text-gray-100">
-                    Jumlah
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">Type</th>
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
+                    Amount
                   </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-900 dark:text-gray-100">
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
+                    Balance After
+                  </th>
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
                     Status
+                  </th>
+                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                    Narration
                   </th>
                 </tr>
               </thead>
@@ -152,11 +159,17 @@ export const RekeningPage: React.FC = () => {
                     key={index}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700">
                       {new Date(tx.postedAt).toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-gray-800 dark:text-gray-200">
-                      {tx.narration || '-'}
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                      {tx.extRef}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                      {tx.direction}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                      {tx.type}
                     </td>
                     <td
                       className={`px-4 py-2 border border-gray-200 dark:border-gray-700 text-right font-medium ${
@@ -167,8 +180,14 @@ export const RekeningPage: React.FC = () => {
                     >
                       {tx.direction === 'IN' ? '+' : '-'} Rp {tx.amount.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right text-gray-700 dark:text-gray-300">
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
+                      Rp {tx.balanceAfter.toLocaleString('id-ID')}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
                       {tx.status}
+                    </td>
+                    <td className="px-4 py-2 border border-gray-200 dark:border-gray-700">
+                      {tx.narration || '-'}
                     </td>
                   </tr>
                 ))}
@@ -177,7 +196,7 @@ export const RekeningPage: React.FC = () => {
           </div>
         )}
 
-        {transaksi.length > 0 && (
+        {transactions.length > 0 && (
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm text-gray-700 dark:text-gray-300">Rows per page:</label>

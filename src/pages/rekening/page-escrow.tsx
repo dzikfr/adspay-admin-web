@@ -22,17 +22,15 @@ export default function RekeningEscrowPage() {
     try {
       setLoading(true)
       setError(null)
-
       const [balanceData, transaksiData] = await Promise.all([
         getEscrowBalance(),
         getEscrowTransactions(),
       ])
-
       setSaldo(balanceData)
       setTransaksi(transaksiData)
     } catch (err: any) {
       console.error('Error fetching escrow data:', err)
-      setError('Gagal memuat data rekening escrow. Silakan coba lagi.')
+      setError('Failed to load escrow data. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -51,16 +49,16 @@ export default function RekeningEscrowPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* =============== SALDO =============== */}
+      {/* =============== BALANCE SECTION =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <h1 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
-          Saldo Rekening Escrow
+          Escrow Balance
         </h1>
 
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
         ) : loading && !saldo ? (
-          <p className="text-gray-500">Memuat saldo...</p>
+          <p className="text-gray-500">Loading balance...</p>
         ) : saldo ? (
           <>
             <p className="text-3xl font-bold text-green-600 dark:text-green-400">
@@ -70,19 +68,19 @@ export default function RekeningEscrowPage() {
               {saldo.accountHolderName} • {saldo.accountNo}
             </p>
             <p className="text-xs text-gray-400">
-              Update terakhir: {new Date(saldo.asOf).toLocaleString('id-ID')}
+              Last updated: {new Date(saldo.asOf).toLocaleString('id-ID')}
             </p>
           </>
         ) : (
-          <p className="text-gray-500">Tidak ada data saldo</p>
+          <p className="text-gray-500">No balance data</p>
         )}
       </div>
 
-      {/* =============== HISTORI TRANSAKSI =============== */}
+      {/* =============== TRANSACTION HISTORY SECTION =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
-            Histori Transaksi Escrow
+            Escrow Transaction History
           </h2>
 
           <button
@@ -125,22 +123,20 @@ export default function RekeningEscrowPage() {
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
         ) : transaksi.length === 0 && !loading ? (
-          <p className="text-gray-500">Belum ada histori transaksi.</p>
+          <p className="text-gray-500">No transaction history.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
               <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-4 py-2 border text-gray-900 dark:text-gray-100">
-                    Tanggal & Jam
-                  </th>
-                  <th className="px-4 py-2 border text-gray-900 dark:text-gray-100">Keterangan</th>
-                  <th className="px-4 py-2 border text-right text-gray-900 dark:text-gray-100">
-                    Jumlah
-                  </th>
-                  <th className="px-4 py-2 border text-right text-gray-900 dark:text-gray-100">
-                    Status
-                  </th>
+                  <th className="px-4 py-2 border">Ext Ref</th>
+                  <th className="px-4 py-2 border">Posted At</th>
+                  <th className="px-4 py-2 border">Direction</th>
+                  <th className="px-4 py-2 border">Type</th>
+                  <th className="px-4 py-2 border text-right">Amount</th>
+                  <th className="px-4 py-2 border">Status</th>
+                  <th className="px-4 py-2 border text-right">Balance After</th>
+                  <th className="px-4 py-2 border">Narration</th>
                 </tr>
               </thead>
               <tbody>
@@ -149,12 +145,18 @@ export default function RekeningEscrowPage() {
                     key={index}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <td className="px-4 py-2 border text-gray-800 dark:text-gray-200">
+                    <td className="px-4 py-2 border">{tx.extRef}</td>
+                    <td className="px-4 py-2 border">
                       {new Date(tx.postedAt).toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border text-gray-800 dark:text-gray-200">
-                      {tx.narration || '-'}
+                    <td className="px-4 py-2 border">
+                      {tx.direction === 'IN' ? (
+                        <span className="text-green-600 dark:text-green-400 font-medium">IN</span>
+                      ) : (
+                        <span className="text-red-600 dark:text-red-400 font-medium">OUT</span>
+                      )}
                     </td>
+                    <td className="px-4 py-2 border">{tx.type}</td>
                     <td
                       className={`px-4 py-2 border text-right font-medium ${
                         tx.direction === 'IN'
@@ -162,11 +164,13 @@ export default function RekeningEscrowPage() {
                           : 'text-red-600 dark:text-red-400'
                       }`}
                     >
-                      {tx.direction === 'IN' ? '+' : '-'} Rp {tx.amount.toLocaleString('id-ID')}
+                      Rp {tx.amount.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border text-right text-gray-700 dark:text-gray-300">
-                      {tx.status}
+                    <td className="px-4 py-2 border">{tx.status}</td>
+                    <td className="px-4 py-2 border text-right">
+                      Rp {tx.balanceAfter.toLocaleString('id-ID')}
                     </td>
+                    <td className="px-4 py-2 border">{tx.narration || '-'}</td>
                   </tr>
                 ))}
               </tbody>
