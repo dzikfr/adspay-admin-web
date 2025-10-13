@@ -1,5 +1,5 @@
 // src/services/rekening/escrow.ts
-import axios, { AxiosError } from 'axios'
+import axios from 'axios'
 import { useAuthStore } from '@/stores/authStore'
 
 const BASE_URL = import.meta.env.VITE_BASE_URL || 'http://38.47.94.165:3124'

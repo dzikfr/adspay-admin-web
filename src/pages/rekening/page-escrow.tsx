@@ -13,10 +13,21 @@ export default function RekeningEscrowPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [statusFilter, setStatusFilter] = useState('ALL')
+
   const indexOfLastRow = currentPage * rowsPerPage
   const indexOfFirstRow = indexOfLastRow - rowsPerPage
-  const currentRows = transaksi.slice(indexOfFirstRow, indexOfLastRow)
-  const totalPages = Math.ceil(transaksi.length / rowsPerPage)
+
+  const filteredTransactions = transaksi.filter(tx => {
+    const matchSearch = tx.type.toLowerCase().includes(searchQuery.toLowerCase())
+    const matchStatus =
+      statusFilter === 'ALL' ? true : tx.status.toLowerCase() === statusFilter.toLowerCase()
+    return matchSearch && matchStatus
+  })
+
+  const currentRows = filteredTransactions.slice(indexOfFirstRow, indexOfLastRow)
+  const totalPages = Math.ceil(filteredTransactions.length / rowsPerPage)
 
   const fetchData = async () => {
     try {
@@ -49,11 +60,51 @@ export default function RekeningEscrowPage() {
 
   return (
     <div className="p-6 space-y-6">
+      {/* =============== PAGE HEADER (TITLE + REFRESH) =============== */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+        <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Rekening Escrow</h1>
+        <button
+          onClick={handleRefresh}
+          disabled={loading}
+          className={`flex items-center gap-2 px-4 py-2 mt-3 sm:mt-0 text-sm font-medium rounded-lg transition-colors ${
+            loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
+          } text-white`}
+        >
+          {loading ? (
+            <>
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
+                ></path>
+              </svg>
+              <span>Refreshing...</span>
+            </>
+          ) : (
+            <>🔄 Refresh</>
+          )}
+        </button>
+      </div>
+
       {/* =============== BALANCE SECTION =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h1 className="text-xl font-semibold mb-2 text-gray-900 dark:text-gray-100">
+        <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
           Escrow Balance
-        </h1>
+        </h2>
 
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
@@ -78,52 +129,37 @@ export default function RekeningEscrowPage() {
 
       {/* =============== TRANSACTION HISTORY SECTION =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        <div className="flex items-center justify-between mb-4">
+        {/* HEADER + FILTER/SEARCH */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Escrow Transaction History
           </h2>
 
-          <button
-            onClick={handleRefresh}
-            disabled={loading}
-            className={`flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-              loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-            } text-white`}
-          >
-            {loading ? (
-              <>
-                <svg
-                  className="animate-spin h-4 w-4 text-white"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                >
-                  <circle
-                    className="opacity-25"
-                    cx="12"
-                    cy="12"
-                    r="10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                  ></circle>
-                  <path
-                    className="opacity-75"
-                    fill="currentColor"
-                    d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                  ></path>
-                </svg>
-                <span>Refreshing...</span>
-              </>
-            ) : (
-              <>🔄 Refresh</>
-            )}
-          </button>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              type="text"
+              placeholder="Search by type..."
+              value={searchQuery}
+              onChange={e => setSearchQuery(e.target.value)}
+              className="border rounded px-3 py-2 text-sm w-48 dark:bg-gray-800 dark:text-gray-200"
+            />
+            <select
+              value={statusFilter}
+              onChange={e => setStatusFilter(e.target.value)}
+              className="border rounded px-3 py-2 text-sm dark:bg-gray-800 dark:text-gray-200"
+            >
+              <option value="ALL">All Status</option>
+              <option value="SUCCESS">Success</option>
+              <option value="FAILED">Failed</option>
+            </select>
+          </div>
         </div>
 
+        {/* TABLE */}
         {error ? (
           <p className="text-red-500 text-sm">{error}</p>
-        ) : transaksi.length === 0 && !loading ? (
-          <p className="text-gray-500">No transaction history.</p>
+        ) : filteredTransactions.length === 0 && !loading ? (
+          <p className="text-gray-500">No transaction history found.</p>
         ) : (
           <div className="overflow-x-auto">
             <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
@@ -178,7 +214,8 @@ export default function RekeningEscrowPage() {
           </div>
         )}
 
-        {transaksi.length > 0 && (
+        {/* PAGINATION */}
+        {filteredTransactions.length > 0 && (
           <div className="flex items-center justify-between mt-4">
             <div className="flex items-center space-x-2">
               <label className="text-sm text-gray-700 dark:text-gray-300">Rows per page:</label>
