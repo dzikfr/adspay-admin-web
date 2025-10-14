@@ -60,7 +60,7 @@ export default function RekeningEscrowPage() {
 
   return (
     <div className="p-6 space-y-6">
-      {/* =============== PAGE HEADER (TITLE + REFRESH) =============== */}
+      {/* =============== HEADER =============== */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Rekening Escrow</h1>
         <button
@@ -100,7 +100,7 @@ export default function RekeningEscrowPage() {
         </button>
       </div>
 
-      {/* =============== BALANCE SECTION =============== */}
+      {/* =============== SALDO =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
         <h2 className="text-lg font-semibold mb-2 text-gray-900 dark:text-gray-100">
           Escrow Balance
@@ -127,9 +127,8 @@ export default function RekeningEscrowPage() {
         )}
       </div>
 
-      {/* =============== TRANSACTION HISTORY SECTION =============== */}
+      {/* =============== TRANSACTIONS =============== */}
       <div className="bg-white dark:bg-gray-900 shadow rounded-lg p-6 border border-gray-200 dark:border-gray-700">
-        {/* HEADER + FILTER/SEARCH */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-3">
           <h2 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
             Escrow Transaction History
@@ -165,14 +164,14 @@ export default function RekeningEscrowPage() {
             <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
               <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-4 py-2 border">Ext Ref</th>
                   <th className="px-4 py-2 border">Posted At</th>
-                  <th className="px-4 py-2 border">Direction</th>
+                  <th className="px-4 py-2 border">Ext Ref</th>
                   <th className="px-4 py-2 border">Type</th>
-                  <th className="px-4 py-2 border text-right">Amount</th>
-                  <th className="px-4 py-2 border">Status</th>
-                  <th className="px-4 py-2 border text-right">Balance After</th>
+                  <th className="px-4 py-2 border">Direction</th>
                   <th className="px-4 py-2 border">Narration</th>
+                  <th className="px-4 py-2 border text-right">Amount</th>
+                  <th className="px-4 py-2 border text-right">Balance After</th>
+                  <th className="px-4 py-2 border text-right">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -181,10 +180,11 @@ export default function RekeningEscrowPage() {
                     key={index}
                     className="hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors"
                   >
-                    <td className="px-4 py-2 border">{tx.extRef}</td>
                     <td className="px-4 py-2 border">
                       {new Date(tx.postedAt).toLocaleString('id-ID')}
                     </td>
+                    <td className="px-4 py-2 border">{tx.extRef}</td>
+                    <td className="px-4 py-2 border">{tx.type}</td>
                     <td className="px-4 py-2 border">
                       {tx.direction === 'IN' ? (
                         <span className="text-green-600 dark:text-green-400 font-medium">IN</span>
@@ -192,21 +192,24 @@ export default function RekeningEscrowPage() {
                         <span className="text-red-600 dark:text-red-400 font-medium">OUT</span>
                       )}
                     </td>
-                    <td className="px-4 py-2 border">{tx.type}</td>
-                    <td
-                      className={`px-4 py-2 border text-right font-medium ${
-                        tx.direction === 'IN'
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}
-                    >
+                    <td className="px-4 py-2 border">{tx.narration || '-'}</td>
+                    <td className="px-4 py-2 border text-right text-gray-900 dark:text-gray-100">
                       Rp {tx.amount.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border">{tx.status}</td>
                     <td className="px-4 py-2 border text-right">
                       Rp {tx.balanceAfter.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border">{tx.narration || '-'}</td>
+                    <td
+                      className={`px-4 py-2 border text-right font-semibold ${
+                        tx.status.toLowerCase() === 'success'
+                          ? 'text-green-600 dark:text-green-400'
+                          : tx.status.toLowerCase() === 'failed'
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      {tx.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>

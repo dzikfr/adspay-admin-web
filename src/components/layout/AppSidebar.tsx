@@ -1,4 +1,4 @@
-import { Home, Inbox, ChevronRight, User, UserCog, Wallet } from 'lucide-react'
+import { Home, Inbox, ChevronRight, User, UserCog, Wallet, CreditCard } from 'lucide-react'
 import { Link, useLocation } from 'react-router-dom'
 import { cn } from '@/lib/utils'
 import {
@@ -50,6 +50,12 @@ const items: MenuItemType[] = [
       { title: 'Rekening Operasional', url: '/rekening' },
       { title: 'Rekening Escrow', url: '/rekening/escrow' }, // ✅ submenu baru
     ],
+  },
+  // 🆕 Tambahkan menu Transaction tanpa submenu
+  {
+    title: 'Transaction',
+    url: '/transaction',
+    icon: CreditCard,
   },
 ]
 

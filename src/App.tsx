@@ -11,7 +11,8 @@ import { useTokenRefresher } from '@/hooks/useTokenRefresher'
 import { SaldoPage } from '@/pages/user/saldo/page'
 import { ListAdminPage } from './pages/admin/page'
 import { RekeningPage } from '@/pages/rekening/page'
-import PageEscrow from '@/pages/rekening/page-escrow' // ✅ Tambahan baru
+import PageEscrow from '@/pages/rekening/page-escrow'
+import TransactionPage from '@/pages/transaction/page'
 
 function App() {
   const { accessToken } = useAuthStore()
@@ -38,7 +39,8 @@ function App() {
           <Route path="/saldo/*" element={<SaldoPage />} />
           {/* Rekening */}
           <Route path="/rekening" element={<RekeningPage />} />
-          <Route path="/rekening/escrow" element={<PageEscrow />} /> {/* ✅ Route baru */}
+          <Route path="/rekening/escrow" element={<PageEscrow />} />
+          <Route path="/transaction" element={<TransactionPage />} />
         </Route>
       </Routes>
 

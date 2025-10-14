@@ -168,26 +168,14 @@ export const RekeningPage: React.FC = () => {
             <table className="min-w-full border border-gray-200 dark:border-gray-700 text-sm">
               <thead className="bg-gray-100 dark:bg-gray-800">
                 <tr>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
-                    Posted At
-                  </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">Ext Ref</th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
-                    Direction
-                  </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">Type</th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
-                    Amount
-                  </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
-                    Balance After
-                  </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700 text-right">
-                    Status
-                  </th>
-                  <th className="px-4 py-2 border border-gray-200 dark:border-gray-700">
-                    Narration
-                  </th>
+                  <th className="px-4 py-2 border">Posted At</th>
+                  <th className="px-4 py-2 border">Ext Ref</th>
+                  <th className="px-4 py-2 border">Type</th>
+                  <th className="px-4 py-2 border">Direction</th>
+                  <th className="px-4 py-2 border">Narration</th>
+                  <th className="px-4 py-2 border text-right">Amount</th>
+                  <th className="px-4 py-2 border text-right">Balance After</th>
+                  <th className="px-4 py-2 border text-right">Status</th>
                 </tr>
               </thead>
               <tbody>
@@ -200,22 +188,26 @@ export const RekeningPage: React.FC = () => {
                       {new Date(tx.postedAt).toLocaleString('id-ID')}
                     </td>
                     <td className="px-4 py-2 border">{tx.extRef}</td>
-                    <td className="px-4 py-2 border">{tx.direction}</td>
                     <td className="px-4 py-2 border">{tx.type}</td>
-                    <td
-                      className={`px-4 py-2 border text-right font-medium ${
-                        tx.direction === 'IN'
-                          ? 'text-green-600 dark:text-green-400'
-                          : 'text-red-600 dark:text-red-400'
-                      }`}
-                    >
-                      {tx.direction === 'IN' ? '+' : '-'} Rp {tx.amount.toLocaleString('id-ID')}
+                    <td className="px-4 py-2 border">{tx.direction}</td>
+                    <td className="px-4 py-2 border">{tx.narration || '-'}</td>
+                    <td className="px-4 py-2 border text-right text-gray-900 dark:text-gray-100">
+                      Rp {tx.amount.toLocaleString('id-ID')}
                     </td>
                     <td className="px-4 py-2 border text-right">
                       Rp {tx.balanceAfter.toLocaleString('id-ID')}
                     </td>
-                    <td className="px-4 py-2 border text-right">{tx.status}</td>
-                    <td className="px-4 py-2 border">{tx.narration || '-'}</td>
+                    <td
+                      className={`px-4 py-2 border text-right font-semibold ${
+                        tx.status.toLowerCase() === 'success'
+                          ? 'text-green-600 dark:text-green-400'
+                          : tx.status.toLowerCase() === 'failed'
+                            ? 'text-red-600 dark:text-red-400'
+                            : 'text-gray-600 dark:text-gray-300'
+                      }`}
+                    >
+                      {tx.status}
+                    </td>
                   </tr>
                 ))}
               </tbody>
