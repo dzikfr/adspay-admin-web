@@ -15,12 +15,14 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import * as XLSX from 'xlsx'
+import jsPDF from 'jspdf'
+import autoTable from 'jspdf-autotable'
 
 export default function TransactionPage() {
   const [transactions, setTransactions] = useState<TransactionItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
-  const [typeFilter, setTypeFilter] = useState('') // optional type filter
+  const [typeFilter, setTypeFilter] = useState('ALL')
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -31,14 +33,20 @@ export default function TransactionPage() {
 
   const fetchTransactions = async () => {
     setLoading(true)
+
+    // Format tanggal menjadi ISO LocalDateTime
+    const start = startDate ? `${startDate}T00:00:00` : undefined
+    const end = endDate ? `${endDate}T23:59:59` : undefined
+
     const data = await getTransactions({
       page: currentPage - 1,
       size: rowsPerPage,
       status: statusFilter === 'All' ? undefined : statusFilter,
-      type: typeFilter || undefined,
-      startDate: startDate || undefined,
-      endDate: endDate || undefined,
+      type: typeFilter === 'ALL' ? undefined : typeFilter,
+      startDate: start,
+      endDate: end,
     })
+
     setTransactions(data.content)
     setTotalPages(data.totalPages)
     setLoading(false)
@@ -55,19 +63,16 @@ export default function TransactionPage() {
     fetchTransactions()
   }, [currentPage, rowsPerPage, statusFilter, startDate, endDate, typeFilter])
 
-  const handleRefresh = () => {
-    fetchTransactions()
-  }
-
+  const handleRefresh = () => fetchTransactions()
   const handleRowsPerPageChange = (value: number) => {
     setRowsPerPage(value)
     setCurrentPage(1)
   }
-
   const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1))
   const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages))
 
-  const handleExport = () => {
+  // ===== EXPORT XLSX =====
+  const handleExportXLSX = () => {
     const exportData = transactions.map(item => ({
       'Transaction Code': item.transactionCode,
       'User Name': item.userFullName,
@@ -93,6 +98,7 @@ export default function TransactionPage() {
 
     const filenameParts = []
     if (statusFilter !== 'All') filenameParts.push(statusFilter)
+    if (typeFilter !== 'ALL') filenameParts.push(typeFilter)
     if (startDate && endDate) filenameParts.push(`${startDate}_to_${endDate}`)
 
     const filename =
@@ -101,6 +107,70 @@ export default function TransactionPage() {
         : 'transactions_all.xlsx'
 
     XLSX.writeFile(wb, filename)
+  }
+
+  // ===== EXPORT PDF =====
+  const handleExportPDF = () => {
+    const doc = new jsPDF('landscape')
+    const tableColumn = [
+      'Transaction Code',
+      'User Name',
+      'Type',
+      'Direction',
+      'Amount',
+      'Balance After',
+      'Channel',
+      'Status',
+      'Date',
+    ]
+    const tableRows: any[] = []
+
+    transactions.forEach(item => {
+      tableRows.push([
+        item.transactionCode,
+        item.userFullName,
+        item.type,
+        item.direction,
+        `Rp ${item.amount.toLocaleString('id-ID')}`,
+        `Rp ${item.balanceAfter.toLocaleString('id-ID')}`,
+        item.channel,
+        item.status,
+        new Date(item.createdAt).toLocaleString('id-ID', {
+          day: '2-digit',
+          month: 'short',
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+        }),
+      ])
+    })
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 25,
+      styles: { fontSize: 8 },
+      theme: 'grid',
+      headStyles: { fillColor: [41, 128, 185] },
+      didDrawPage: data => {
+        doc.setFontSize(14)
+        doc.text('Transaction List', data.settings.margin.left, 15)
+      },
+      pageBreak: 'auto',
+    })
+
+    const filenameParts = []
+    if (statusFilter !== 'All') filenameParts.push(statusFilter)
+    if (typeFilter !== 'ALL') filenameParts.push(typeFilter)
+    if (startDate && endDate) filenameParts.push(`${startDate}_to_${endDate}`)
+
+    const filename =
+      filenameParts.length > 0
+        ? `transactions_${filenameParts.join('_')}.pdf`
+        : 'transactions_all.pdf'
+
+    doc.save(filename)
   }
 
   // ===== DETAIL VIEW =====
@@ -168,11 +238,22 @@ export default function TransactionPage() {
               <SelectTrigger className="w-[140px] bg-white dark:bg-gray-700 dark:text-gray-100">
                 <SelectValue placeholder="All Status" />
               </SelectTrigger>
-              <SelectContent className="bg-white dark:bg-gray-700 dark:text-gray-100">
+              <SelectContent className="bg-white dark:bg-gray-700 dark:text-gray-700">
                 <SelectItem value="All">All Status</SelectItem>
                 <SelectItem value="SUCCESS">Success</SelectItem>
                 <SelectItem value="PENDING">Pending</SelectItem>
                 <SelectItem value="FAILED">Failed</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={typeFilter} onValueChange={setTypeFilter}>
+              <SelectTrigger className="w-[140px] bg-white dark:bg-gray-700 dark:text-gray-100">
+                <SelectValue placeholder="All Types" />
+              </SelectTrigger>
+              <SelectContent className="bg-white dark:bg-gray-700 dark:text-gray-100">
+                <SelectItem value="ALL">All Types</SelectItem>
+                <SelectItem value="TOPUP">Top Up</SelectItem>
+                <SelectItem value="TRANSFER">Transfer</SelectItem>
               </SelectContent>
             </Select>
 
@@ -195,11 +276,21 @@ export default function TransactionPage() {
             <Button
               variant="outline"
               className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
-              onClick={handleExport}
+              onClick={handleExportXLSX}
               disabled={transactions.length === 0}
             >
               <Download className="size-4 mr-2" />
               Export XLS
+            </Button>
+
+            <Button
+              variant="outline"
+              className="bg-red-600 text-white hover:bg-red-700 dark:bg-red-700 dark:hover:bg-red-600"
+              onClick={handleExportPDF}
+              disabled={transactions.length === 0}
+            >
+              <Download className="size-4 mr-2" />
+              Export PDF
             </Button>
 
             <Button
@@ -214,6 +305,7 @@ export default function TransactionPage() {
           </div>
         </CardHeader>
 
+        {/* TABLE & PAGINATION */}
         <CardContent>
           <div className="overflow-x-auto">
             <table className="w-full table-auto border border-gray-200 dark:border-gray-700 rounded-lg">
