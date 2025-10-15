@@ -56,12 +56,10 @@ const API_BASE_URL = import.meta.env.VITE_BASE_URL
 
 const getAuthHeaders = () => {
   const { accessToken } = useAuthStore.getState()
-
   if (!accessToken) {
     console.error('⚠️ Token tidak ditemukan. Pastikan user sudah login.')
     throw new Error('No access token found')
   }
-
   return {
     'Content-Type': 'application/json',
     Authorization: `Bearer ${accessToken}`,
@@ -70,25 +68,48 @@ const getAuthHeaders = () => {
 
 // ==================== API FUNCTION ====================
 
-export async function getTransactions(): Promise<TransactionItem[]> {
+export async function getTransactions(params?: {
+  type?: string
+  status?: string
+  page?: number
+  size?: number
+  startDate?: string
+  endDate?: string
+}): Promise<TransactionResponse['data']> {
   try {
     const response = await axios.get<TransactionResponse>(`${API_BASE_URL}/api/web/transactions`, {
       headers: getAuthHeaders(),
       params: {
-        page: 0,
-        size: 10,
+        page: params?.page ?? 0,
+        size: params?.size ?? 10,
+        type: params?.type,
+        status: params?.status,
+        startDate: params?.startDate,
+        endDate: params?.endDate,
       },
     })
 
     if (response.data.resp_code === '00') {
-      return response.data.data.content
+      return response.data.data
     } else {
       console.error('Error response:', response.data.resp_message)
-      return []
+      return {
+        content: [],
+        currentPage: 0,
+        totalPages: 0,
+        totalItems: 0,
+        pageSize: 10,
+      }
     }
   } catch (error: any) {
     console.error('❌ Failed to fetch transactions:', error.response?.data || error.message)
-    return []
+    return {
+      content: [],
+      currentPage: 0,
+      totalPages: 0,
+      totalItems: 0,
+      pageSize: 10,
+    }
   }
 }
 

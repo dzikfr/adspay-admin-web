@@ -20,17 +20,27 @@ export default function TransactionPage() {
   const [transactions, setTransactions] = useState<TransactionItem[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [statusFilter, setStatusFilter] = useState('All')
+  const [typeFilter, setTypeFilter] = useState('') // optional type filter
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [startDate, setStartDate] = useState('')
   const [endDate, setEndDate] = useState('')
+  const [totalPages, setTotalPages] = useState(1)
   const [selectedTransaction, setSelectedTransaction] = useState<TransactionDetail | null>(null)
 
   const fetchTransactions = async () => {
     setLoading(true)
-    const data = await getTransactions()
-    setTransactions(data)
+    const data = await getTransactions({
+      page: currentPage - 1,
+      size: rowsPerPage,
+      status: statusFilter === 'All' ? undefined : statusFilter,
+      type: typeFilter || undefined,
+      startDate: startDate || undefined,
+      endDate: endDate || undefined,
+    })
+    setTransactions(data.content)
+    setTotalPages(data.totalPages)
     setLoading(false)
   }
 
@@ -43,50 +53,22 @@ export default function TransactionPage() {
 
   useEffect(() => {
     fetchTransactions()
-  }, [])
+  }, [currentPage, rowsPerPage, statusFilter, startDate, endDate, typeFilter])
 
   const handleRefresh = () => {
     fetchTransactions()
   }
-
-  // ===== FILTERING =====
-  const filteredData = transactions.filter(item => {
-    const matchesSearch =
-      item.transactionCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.userFullName.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesStatus = statusFilter === 'All' || item.status === statusFilter
-    const matchesDate =
-      (!startDate || new Date(item.createdAt) >= new Date(startDate)) &&
-      (!endDate || new Date(item.createdAt) <= new Date(endDate))
-
-    return matchesSearch && matchesStatus && matchesDate
-  })
-
-  // ===== PAGINATION =====
-  const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage))
-  const paginatedData = filteredData.slice(
-    (currentPage - 1) * rowsPerPage,
-    currentPage * rowsPerPage
-  )
 
   const handleRowsPerPageChange = (value: number) => {
     setRowsPerPage(value)
     setCurrentPage(1)
   }
 
-  const handlePrevPage = () => {
-    setCurrentPage(prev => Math.max(prev - 1, 1))
-  }
+  const handlePrevPage = () => setCurrentPage(prev => Math.max(prev - 1, 1))
+  const handleNextPage = () => setCurrentPage(prev => Math.min(prev + 1, totalPages))
 
-  const handleNextPage = () => {
-    setCurrentPage(prev => Math.min(prev + 1, totalPages))
-  }
-
-  // ===== EXPORT XLS =====
   const handleExport = () => {
-    const exportData = filteredData.map(item => ({
+    const exportData = transactions.map(item => ({
       'Transaction Code': item.transactionCode,
       'User Name': item.userFullName,
       Type: item.type,
@@ -121,7 +103,7 @@ export default function TransactionPage() {
     XLSX.writeFile(wb, filename)
   }
 
-  // ================= DETAIL VIEW =================
+  // ===== DETAIL VIEW =====
   if (selectedTransaction) {
     return (
       <div className="p-6">
@@ -167,7 +149,7 @@ export default function TransactionPage() {
     )
   }
 
-  // ================= LIST VIEW =================
+  // ===== LIST VIEW =====
   return (
     <div className="p-6 space-y-4">
       <Card className="bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 shadow-md">
@@ -214,7 +196,7 @@ export default function TransactionPage() {
               variant="outline"
               className="bg-green-600 text-white hover:bg-green-700 dark:bg-green-700 dark:hover:bg-green-600"
               onClick={handleExport}
-              disabled={filteredData.length === 0}
+              disabled={transactions.length === 0}
             >
               <Download className="size-4 mr-2" />
               Export XLS
@@ -249,45 +231,52 @@ export default function TransactionPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginatedData.length > 0 ? (
-                  paginatedData.map(item => (
-                    <tr
-                      key={item.transactionCode}
-                      className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
-                      onClick={() => fetchDetail(item.transactionCode)}
-                    >
-                      <td className="p-3 text-blue-600 dark:text-blue-400">
-                        {item.transactionCode}
-                      </td>
-                      <td className="p-3">{item.userFullName}</td>
-                      <td className="p-3">{item.type}</td>
-                      <td className="p-3">{item.direction}</td>
-                      <td className="p-3">Rp {item.amount.toLocaleString('id-ID')}</td>
-                      <td className="p-3">Rp {item.balanceAfter.toLocaleString('id-ID')}</td>
-                      <td className="p-3">{item.channel}</td>
-                      <td
-                        className={`p-3 font-semibold ${
-                          item.status === 'SUCCESS'
-                            ? 'text-green-600 dark:text-green-400'
-                            : item.status === 'PENDING'
-                              ? 'text-yellow-600 dark:text-yellow-400'
-                              : 'text-red-600 dark:text-red-400'
-                        }`}
+                {transactions.length > 0 ? (
+                  transactions
+                    .filter(
+                      item =>
+                        item.transactionCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        item.userFullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        item.type.toLowerCase().includes(searchTerm.toLowerCase())
+                    )
+                    .map(item => (
+                      <tr
+                        key={item.transactionCode}
+                        className="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer"
+                        onClick={() => fetchDetail(item.transactionCode)}
                       >
-                        {item.status}
-                      </td>
-                      <td className="p-3">
-                        {new Date(item.createdAt).toLocaleString('id-ID', {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                          second: '2-digit',
-                        })}
-                      </td>
-                    </tr>
-                  ))
+                        <td className="p-3 text-blue-600 dark:text-blue-400">
+                          {item.transactionCode}
+                        </td>
+                        <td className="p-3">{item.userFullName}</td>
+                        <td className="p-3">{item.type}</td>
+                        <td className="p-3">{item.direction}</td>
+                        <td className="p-3">Rp {item.amount.toLocaleString('id-ID')}</td>
+                        <td className="p-3">Rp {item.balanceAfter.toLocaleString('id-ID')}</td>
+                        <td className="p-3">{item.channel}</td>
+                        <td
+                          className={`p-3 font-semibold ${
+                            item.status === 'SUCCESS'
+                              ? 'text-green-600 dark:text-green-400'
+                              : item.status === 'PENDING'
+                                ? 'text-yellow-600 dark:text-yellow-400'
+                                : 'text-red-600 dark:text-red-400'
+                          }`}
+                        >
+                          {item.status}
+                        </td>
+                        <td className="p-3">
+                          {new Date(item.createdAt).toLocaleString('id-ID', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit',
+                          })}
+                        </td>
+                      </tr>
+                    ))
                 ) : (
                   <tr>
                     <td colSpan={9} className="p-4 text-center text-gray-500 dark:text-gray-300">
@@ -299,7 +288,7 @@ export default function TransactionPage() {
             </table>
           </div>
 
-          {/* PAGINATION SECTION */}
+          {/* PAGINATION */}
           <div className="flex justify-between items-center mt-4 flex-wrap gap-2">
             <div className="flex items-center">
               <label className="text-sm mr-2 text-gray-700 dark:text-gray-300">
