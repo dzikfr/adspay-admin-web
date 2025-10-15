@@ -92,9 +92,17 @@ export default function TransactionPage() {
       Type: item.type,
       Direction: item.direction,
       Amount: item.amount,
+      BalanceAfter: item.balanceAfter,
       Channel: item.channel,
       Status: item.status,
-      Date: new Date(item.createdAt).toLocaleString('id-ID'),
+      Date: new Date(item.createdAt).toLocaleString('id-ID', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      }),
     }))
 
     const ws = XLSX.utils.json_to_sheet(exportData)
@@ -139,7 +147,17 @@ export default function TransactionPage() {
                 <span className="text-right break-all">
                   {key.toLowerCase().includes('amount') || key === 'balanceAfter'
                     ? `Rp ${Number(value).toLocaleString('id-ID')}`
-                    : String(value)}
+                    : key.toLowerCase().includes('createdat') ||
+                        key.toLowerCase().includes('updatedat')
+                      ? new Date(String(value)).toLocaleString('id-ID', {
+                          day: '2-digit',
+                          month: 'short',
+                          year: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          second: '2-digit',
+                        })
+                      : String(value)}
                 </span>
               </div>
             ))}
@@ -156,7 +174,7 @@ export default function TransactionPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Transaction List</CardTitle>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Input
               placeholder="Search by Code, Type, or Name..."
               value={searchTerm}
@@ -216,13 +234,15 @@ export default function TransactionPage() {
 
         <CardContent>
           <div className="overflow-x-auto">
-            <table className="min-w-full border border-gray-200 dark:border-gray-700 rounded-lg">
+            <table className="w-full table-auto border border-gray-200 dark:border-gray-700 rounded-lg">
               <thead className="bg-gray-100 dark:bg-gray-700">
                 <tr>
                   <th className="p-3 text-left">Transaction Code</th>
                   <th className="p-3 text-left">User Name</th>
                   <th className="p-3 text-left">Type</th>
+                  <th className="p-3 text-left">Direction</th>
                   <th className="p-3 text-left">Amount</th>
+                  <th className="p-3 text-left">Balance After</th>
                   <th className="p-3 text-left">Channel</th>
                   <th className="p-3 text-left">Status</th>
                   <th className="p-3 text-left">Date</th>
@@ -241,7 +261,9 @@ export default function TransactionPage() {
                       </td>
                       <td className="p-3">{item.userFullName}</td>
                       <td className="p-3">{item.type}</td>
+                      <td className="p-3">{item.direction}</td>
                       <td className="p-3">Rp {item.amount.toLocaleString('id-ID')}</td>
+                      <td className="p-3">Rp {item.balanceAfter.toLocaleString('id-ID')}</td>
                       <td className="p-3">{item.channel}</td>
                       <td
                         className={`p-3 font-semibold ${
@@ -261,13 +283,14 @@ export default function TransactionPage() {
                           year: 'numeric',
                           hour: '2-digit',
                           minute: '2-digit',
+                          second: '2-digit',
                         })}
                       </td>
                     </tr>
                   ))
                 ) : (
                   <tr>
-                    <td colSpan={8} className="p-4 text-center text-gray-500 dark:text-gray-300">
+                    <td colSpan={9} className="p-4 text-center text-gray-500 dark:text-gray-300">
                       {loading ? 'Loading...' : 'No transactions found'}
                     </td>
                   </tr>
@@ -277,8 +300,7 @@ export default function TransactionPage() {
           </div>
 
           {/* PAGINATION SECTION */}
-          <div className="flex justify-between items-center mt-4">
-            {/* Left side - Rows per page */}
+          <div className="flex justify-between items-center mt-4 flex-wrap gap-2">
             <div className="flex items-center">
               <label className="text-sm mr-2 text-gray-700 dark:text-gray-300">
                 Rows per page:
@@ -296,29 +318,36 @@ export default function TransactionPage() {
               </select>
             </div>
 
-            {/* Right side - Pagination */}
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-gray-500 dark:text-gray-300">
-                Page {currentPage} of {totalPages}
-              </span>
-              <div className="flex gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
+              <Button
+                className="px-3 py-1 border rounded disabled:opacity-50 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                disabled={currentPage === 1}
+                onClick={handlePrevPage}
+              >
+                Previous
+              </Button>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                 <Button
-                  variant="outline"
-                  className="bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                  disabled={currentPage === 1}
-                  onClick={handlePrevPage}
+                  key={page}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage === page
+                      ? 'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600'
+                      : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600'
+                  }`}
+                  onClick={() => setCurrentPage(page)}
                 >
-                  Prev
+                  {page}
                 </Button>
-                <Button
-                  variant="outline"
-                  className="bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
-                  disabled={currentPage === totalPages}
-                  onClick={handleNextPage}
-                >
-                  Next
-                </Button>
-              </div>
+              ))}
+
+              <Button
+                className="px-3 py-1 border rounded disabled:opacity-50 bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-600"
+                disabled={currentPage === totalPages}
+                onClick={handleNextPage}
+              >
+                Next
+              </Button>
             </div>
           </div>
         </CardContent>

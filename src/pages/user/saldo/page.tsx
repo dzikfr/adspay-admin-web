@@ -153,56 +153,54 @@ const SaldoList: React.FC = () => {
         </tbody>
       </table>
       {/* Pagination & Rows per page */}
-      <div className="flex justify-between items-center mt-4">
-        <div className="flex items-center gap-2">
-          <label>Rows per page:</label>
-          <select
-            value={rowsPerPage}
-            onChange={e => {
-              setRowsPerPage(Number(e.target.value))
-              setCurrentPage(1)
-            }}
-            className="px-3 py-1 border rounded w-28 dark:bg-gray-700 dark:border-gray-600"
-          >
-            {[10, 25, 50, 100].map(n => (
-              <option key={n} value={n}>
-                {n}
-              </option>
-            ))}
-          </select>
-          <span>
-            Showing {(currentPage - 1) * rowsPerPage + 1} to{' '}
-            {Math.min(currentPage * rowsPerPage, filteredData.length)} of {filteredData.length}
-          </span>
-        </div>
-        <div className="flex gap-2">
-          <button
-            disabled={currentPage === 1}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-            onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-          >
-            Previous
-          </button>
-          {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-            <button
-              key={page}
-              className={`px-3 py-1 border rounded ${
-                currentPage === page ? 'bg-blue-600 text-white' : ''
-              }`}
-              onClick={() => setCurrentPage(page)}
+      {filteredData.length > 0 && (
+        <div className="flex justify-between items-center mt-4">
+          <div className="flex items-center gap-2">
+            <label>Rows per page:</label>
+            <select
+              value={rowsPerPage}
+              onChange={e => {
+                setRowsPerPage(Number(e.target.value))
+                setCurrentPage(1)
+              }}
+              className="px-3 py-1 border rounded w-28 dark:bg-gray-700 dark:border-gray-600"
             >
-              {page}
+              {[10, 25, 50, 100].map(n => (
+                <option key={n} value={n}>
+                  {n}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="flex gap-2">
+            <button
+              disabled={currentPage === 1}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+            >
+              Previous
             </button>
-          ))}
-          <button
-            disabled={currentPage === totalPages}
-            className="px-3 py-1 border rounded disabled:opacity-50"
-            onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
-          >
-            Next
-          </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+              <button
+                key={page}
+                className={`px-3 py-1 border rounded ${
+                  currentPage === page ? 'bg-blue-600 text-white' : ''
+                }`}
+                onClick={() => setCurrentPage(page)}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              disabled={currentPage === totalPages}
+              className="px-3 py-1 border rounded disabled:opacity-50"
+              onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+            >
+              Next
+            </button>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

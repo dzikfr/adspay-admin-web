@@ -70,7 +70,6 @@ export const RekeningPage: React.FC = () => {
           Operational Account Overview
         </h1>
 
-        {/* ✅ Refresh button disamakan dengan Transaction Page */}
         <Button
           variant="outline"
           className="bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-600"
@@ -209,21 +208,32 @@ export const RekeningPage: React.FC = () => {
               </select>
             </div>
 
-            <div className="flex items-center space-x-2">
+            {/* ================= PREV / PAGE NUMBERS / NEXT ================= */}
+            <div className="flex items-center space-x-1">
               <button
-                onClick={() => setCurrentPage(p => Math.max(p - 1, 1))}
                 disabled={currentPage === 1}
                 className="px-3 py-1 border rounded disabled:opacity-50 dark:bg-gray-800 dark:text-gray-200"
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
               >
-                Prev
+                Previous
               </button>
-              <span className="text-sm text-gray-700 dark:text-gray-300">
-                Page {currentPage} of {totalPages}
-              </span>
+
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                <button
+                  key={page}
+                  className={`px-3 py-1 border rounded ${
+                    currentPage === page ? 'bg-blue-600 text-white' : ''
+                  } dark:bg-gray-800 dark:text-gray-200`}
+                  onClick={() => setCurrentPage(page)}
+                >
+                  {page}
+                </button>
+              ))}
+
               <button
-                onClick={() => setCurrentPage(p => Math.min(p + 1, totalPages))}
                 disabled={currentPage === totalPages}
                 className="px-3 py-1 border rounded disabled:opacity-50 dark:bg-gray-800 dark:text-gray-200"
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
               >
                 Next
               </button>
