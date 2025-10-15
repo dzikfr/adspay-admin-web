@@ -1,6 +1,7 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { RefreshCw } from 'lucide-react'
 import { getEscrowBalance, getEscrowTransactions } from '@/services/rekening/escrow'
 import type { EscrowBalanceData, EscrowTransactionItem } from '@/services/rekening/escrow'
 
@@ -12,7 +13,6 @@ export default function RekeningEscrowPage() {
 
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [currentPage, setCurrentPage] = useState(1)
-
   const [searchQuery, setSearchQuery] = useState('')
   const [statusFilter, setStatusFilter] = useState('ALL')
 
@@ -61,42 +61,16 @@ export default function RekeningEscrowPage() {
   return (
     <div className="p-6 space-y-6">
       {/* =============== HEADER =============== */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100">Rekening Escrow</h1>
+
         <button
           onClick={handleRefresh}
           disabled={loading}
-          className={`flex items-center gap-2 px-4 py-2 mt-3 sm:mt-0 text-sm font-medium rounded-lg transition-colors ${
-            loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'
-          } text-white`}
+          className="flex items-center gap-2 px-4 py-2 text-sm font-medium bg-blue-600 hover:bg-blue-700 text-white rounded-lg shadow transition-colors disabled:opacity-50"
         >
-          {loading ? (
-            <>
-              <svg
-                className="animate-spin h-4 w-4 text-white"
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-              >
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                ></circle>
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8v4l3-3-3-3v4a8 8 0 00-8 8h4z"
-                ></path>
-              </svg>
-              <span>Refreshing...</span>
-            </>
-          ) : (
-            <>🔄 Refresh</>
-          )}
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-white' : 'text-white'}`} />
+          {loading ? 'Refreshing...' : 'Refresh'}
         </button>
       </div>
 
