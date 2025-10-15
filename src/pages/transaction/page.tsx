@@ -65,11 +65,24 @@ export default function TransactionPage() {
   })
 
   // ===== PAGINATION =====
-  const totalPages = Math.ceil(filteredData.length / rowsPerPage)
+  const totalPages = Math.max(1, Math.ceil(filteredData.length / rowsPerPage))
   const paginatedData = filteredData.slice(
     (currentPage - 1) * rowsPerPage,
     currentPage * rowsPerPage
   )
+
+  const handleRowsPerPageChange = (value: number) => {
+    setRowsPerPage(value)
+    setCurrentPage(1)
+  }
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(prev - 1, 1))
+  }
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(prev + 1, totalPages))
+  }
 
   // ===== EXPORT XLS =====
   const handleExport = () => {
@@ -261,6 +274,52 @@ export default function TransactionPage() {
                 )}
               </tbody>
             </table>
+          </div>
+
+          {/* PAGINATION SECTION */}
+          <div className="flex justify-between items-center mt-4">
+            {/* Left side - Rows per page */}
+            <div className="flex items-center">
+              <label className="text-sm mr-2 text-gray-700 dark:text-gray-300">
+                Rows per page:
+              </label>
+              <select
+                value={rowsPerPage}
+                onChange={e => handleRowsPerPageChange(Number(e.target.value))}
+                className="border rounded px-2 py-1 text-sm dark:bg-gray-800 dark:text-gray-200"
+              >
+                {[10, 25, 50, 100].map(size => (
+                  <option key={size} value={size}>
+                    {size}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Right side - Pagination */}
+            <div className="flex items-center gap-4">
+              <span className="text-sm text-gray-500 dark:text-gray-300">
+                Page {currentPage} of {totalPages}
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  disabled={currentPage === 1}
+                  onClick={handlePrevPage}
+                >
+                  Prev
+                </Button>
+                <Button
+                  variant="outline"
+                  className="bg-gray-600 text-white hover:bg-gray-700 dark:bg-gray-700 dark:hover:bg-gray-600"
+                  disabled={currentPage === totalPages}
+                  onClick={handleNextPage}
+                >
+                  Next
+                </Button>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
